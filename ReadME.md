@@ -24,7 +24,7 @@ curl -X POST http://localhost:8080/v1/chat/completions \
 ### 1. Clone with Submodules
 
 ```bash
-git clone --recursive https://github.com/yourrepo/uniapi.git
+git clone --recursive https://github.com/NGLSG/UniAPI.git
 cd uniapi
 # If submodules weren't pulled:
 git submodule update --init --recursive
