@@ -25,7 +25,7 @@ curl -X POST http://localhost:8080/v1/chat/completions \
 
 ```bash
 git clone --recursive https://github.com/NGLSG/UniAPI.git
-cd uniapi
+cd UniAPI
 # If submodules weren't pulled:
 git submodule update --init --recursive
 ```
@@ -68,6 +68,13 @@ make -j4
 | **Gemini**           | Gemini 1.5 models from Google              |
 | **Other**            | Use rules to adapt to almost any interface |
 
+## 🔧 **Configuration**
+
+Edit the `Config.yaml` file to set up your providers.
+If you want use GUI to configure, you can use [ChatBot](https://github.com/NGLSG/ChatBot) project to easily configure
+the `Config.yaml` file(After the configuration is completed, you can find config.yaml in the same directory as the
+ChatBot executable file, and the appropriate modification can be applied to this project).
+And also you can use [ChatBot](https://github.com/NGLSG/ChatBot) project it is very convenient to chat with the LLMs.
 
 ## 📜 **License**
 
