@@ -1,0 +1,15 @@
+[submodule "External/yaml-cpp"]
+	path = External/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp.git
+[submodule "External/crow"]
+	path = External/crow
+	url = https://github.com/CrowCpp/Crow.git
+[submodule "External/spdlog"]
+	path = External/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "External/llama-cpp"]
+	path = External/llama-cpp
+	url = https://github.com/ggml-org/llama.cpp
+[submodule "External/json"]
+	path = External/json
+	url = https://github.com/nlohmann/json.git
