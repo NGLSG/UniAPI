@@ -1,7 +1,7 @@
 #ifndef CHATBOT_H
 #define CHATBOT_H
 
-#include "utils.h"
+#include "Utils.h"
 #include <llama.h>
 #include <map>
 #include <mutex>

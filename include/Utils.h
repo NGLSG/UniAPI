@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <yaml-cpp/yaml.h>
-
+#include <optional>
 #include "Logger.h"
 
 class UFile
@@ -40,7 +40,7 @@ public:
     static std::vector<std::string> GetSubDirectories(const std::string& dirPath);
 };
 
-inline static void SaveYaml(const std::string& filename, const YAML::Node& node)
+static void SaveYaml(const std::string& filename, const YAML::Node& node)
 {
     std::ofstream file(filename);
     if (!file.is_open())
@@ -53,7 +53,7 @@ inline static void SaveYaml(const std::string& filename, const YAML::Node& node)
 }
 
 template <typename T>
-inline static std::optional<T> LoadYaml(const std::string& file)
+static std::optional<T> LoadYaml(const std::string& file)
 {
     try
     {
@@ -72,7 +72,7 @@ inline static std::optional<T> LoadYaml(const std::string& file)
 }
 
 template <typename T>
-inline static YAML::Node toYaml(const T& value)
+static YAML::Node toYaml(const T& value)
 {
     YAML::Node node;
     node = value;

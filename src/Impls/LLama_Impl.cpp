@@ -7,7 +7,13 @@
 
 llama_chat_message LLama::ChatMessage::To()
 {
+#ifdef _WIN32
+    // Windows环境下使用_strdup
     return {role.c_str(), _strdup(content.c_str())};
+#else
+    // Linux/Unix环境下使用strdup
+    return {role.c_str(), strdup(content.c_str())};
+#endif
 }
 
 std::vector<llama_chat_message> LLama::chatInfo::To()

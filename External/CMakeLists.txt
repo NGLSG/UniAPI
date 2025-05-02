@@ -11,7 +11,7 @@ option(GGML_CUDA_FORCE_MMQ "强制使用 CUDA MMQ (如可用)" ON)
 
 
 # 添加Boost asio组件
-find_package(Boost REQUIRED COMPONENTS asio)
+find_package(Boost REQUIRED)
 
 # 添加子目录
 add_subdirectory(json)
@@ -54,7 +54,7 @@ target_link_libraries(uniLib INTERFACE
         CURL::libcurl                 # curl库
         ${Vulkan_LIBRARIES}           # Vulkan库
         spdlog::spdlog                # 日志库
-        Boost::asio                   # Boost asio库
+        Boost::boost                  # Boost库
         Crow                          # Crow框架库
 )
 target_include_directories(uniLib INTERFACE
@@ -64,18 +64,15 @@ target_include_directories(uniLib INTERFACE
 if (GGML_CUDA)
     # 如果有CUDA可用，链接CUDA相关库
     target_compile_definitions(uniLib INTERFACE HAVE_CUDA=1)
-    target_link_libraries(uniLib INTERFACE ggml-cuda)
     if (CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 12.0)
         target_compile_definitions(uniLib INTERFACE HAVE_CUDA12=1)
     endif ()
 elseif (GGML_VULKAN)
     # 如果使用Vulkan
     target_compile_definitions(uniLib INTERFACE HAVE_VULKAN=1)
-    target_link_libraries(uniLib INTERFACE ggml-vulkan)
 else ()
     # 仅CPU模式
     target_compile_definitions(uniLib INTERFACE CPU_ONLY=1)
-    target_link_libraries(uniLib INTERFACE ggml-cpu)
 endif ()
 
 # 添加包含目录

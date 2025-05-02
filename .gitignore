@@ -33,4 +33,5 @@
 *.app
 
 cmake-build-*/
+.idea/
 
