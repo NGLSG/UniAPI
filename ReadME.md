@@ -3,10 +3,10 @@
 <div align="center">
   <h3>通用LLM API集成工具包 | 万能なLLM API統合ツールキット | Universal LLM API Integration Toolkit</h3>
   <p><i>"一个标准调用所有 | 全てを呼び出す一つの標準 | One Standard to Call Them All"</i></p>
-  
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![C++20](https://img.shields.io/badge/C++-20%2B-00599C?logo=c%2B%2B)](https://en.cppreference.com/w/cpp/compiler_support)
-  [![CUDA](https://img.shields.io/badge/CUDA-Optional-76B900?logo=nvidia)](https://developer.nvidia.com/cuda-toolkit)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![C++20](https://img.shields.io/badge/C++-20%2B-00599C?logo=c%2B%2B)](https://en.cppreference.com/w/cpp/compiler_support)
+[![CUDA](https://img.shields.io/badge/CUDA-Optional-76B900?logo=nvidia)](https://developer.nvidia.com/cuda-toolkit)
 </div>
 
 ---
@@ -23,13 +23,13 @@
 
 ### 🔍 概述
 
-UniAPI 是一个**高性能 C++ 库**，它将 50 多个 LLM API 统一到单个 **OpenAI 兼容的 REST 服务器**中。该库设计用于快速部署，默认情况下**不需要身份验证**，并支持动态提供者加载。
+UniAPI 是一个**高性能 C++ 库**，它将 50 多个 LLM API 统一到一个**OpenAI 兼容的 REST 服务器**中。该库设计用于快速部署，默认情况下**无需身份验证**，支持动态加载提供者，并且可以直接推理本地量化 GGML 模型，无需额外配置。
 
 ```bash
-# 通过 OpenAI 标准端点访问任何 LLM
+# 通过 OpenAI 标准端点调用任何 LLM
 curl -X POST http://localhost:8080/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model":"claude-3","messages":[{"role":"user","content":"你好！"}]}'
+  -H "Content-Type: application/json" \
+  -d '{"model":"claude-3","messages":[{"role":"user","content":"你好！"}]}'
 ```
 
 ### 🚀 快速开始（无需认证）
@@ -77,25 +77,25 @@ git submodule update --init --recursive
 # Ubuntu/Debian 系统
 sudo apt-get update
 sudo apt-get install -y \
-    git cmake build-essential \
-    libvulkan-dev curl libcurl4-openssl-dev \
-    libjsoncpp-dev uuid-dev libssl-dev zlib1g-dev
-    
+    git cmake build-essential \
+    libvulkan-dev curl libcurl4-openssl-dev \
+    libjsoncpp-dev uuid-dev libssl-dev zlib1g-dev
+    
 # 可选数据库支持
 sudo apt-get install -y \
-    libmysqlclient-dev \
-    libsqlite3-dev \
-    libhiredis-dev
+    libmysqlclient-dev \
+    libsqlite3-dev \
+    libhiredis-dev
 
 # CentOS/RHEL 系统
 sudo yum install -y \
-    git cmake gcc-c++ \
-    vulkan-devel curl libcurl-devel \
-    jsoncpp-devel libuuid-devel openssl-devel zlib-devel
-    
+    git cmake gcc-c++ \
+    vulkan-devel curl libcurl-devel \
+    jsoncpp-devel libuuid-devel openssl-devel zlib-devel
+    
 # 可选数据库支持
 sudo yum install -y \
-    mysql-devel sqlite-devel hiredis-devel
+    mysql-devel sqlite-devel hiredis-devel
 ```
 
 ##### 3. 编译项目
@@ -103,15 +103,15 @@ sudo yum install -y \
 ```bash
 mkdir build && cd build
 cmake .. \
-  -DCMAKE_CUDA_COMPILER=[CUDA_DIR]/bin/nvcc \  # 可选 CUDA 编译器
-  -DCMAKE_TOOLCHAIN_FILE=[vcpkg_dir]/scripts/buildsystems/vcpkg.cmake  # 如果使用 vcpkg
+  -DCMAKE_CUDA_COMPILER=[CUDA_DIR]/bin/nvcc \  # 可选 CUDA 编译器
+  -DCMAKE_TOOLCHAIN_FILE=[vcpkg_dir]/scripts/buildsystems/vcpkg.cmake  # 如果使用 vcpkg
 make -j4
 ```
 
 ##### 4. 运行服务器
 
 ```bash
-./bin/UniAPI 8080  # 端口可以更改
+./bin/UniAPI 8080  # 端口可以更改
 ```
 
 ➡️ **立即测试**访问 `http://<your_ip>:8080/v1/chat/completions`
@@ -120,26 +120,72 @@ make -j4
 
 | 特性 | 描述 |
 |------|------|
-| **🔓 零认证** | 默认情况下不需要 API 密钥 |
-| **⚡ 快速推理** | 可选 CUDA 支持，用于 GPU 加速 |
-| **📡 REST 标准** | 100% OpenAI 兼容端点（即使对于非 OpenAI 模型）|
-| **🔄 配置** | 编辑 'Config.yaml' 来配置你的 API |
+| **🔓 零认证** | 默认无需 API 密钥 |
+| **⚡ 快速推理** | 支持 GPU 加速的可选 CUDA |
+| **📦 本地量化模型** | 直接推理本地量化 GGML 模型，无需额外配置 |
+| **📡 REST 标准** | 100% 兼容 OpenAI 标准端点 |
+| **🔄 动态配置** | 通过 `Config.yaml` 灵活配置 API |
+| **🔌 自定义提供者** | 使用规则适配任意接口，实现高度扩展性 |
 
 ### 📦 支持的后端
 
 | 提供商 | 描述 |
 |--------|------|
-| **OpenAI** | OpenAI 的 GPT-3.5 和 GPT-4 模型 |
-| **Claude** | Anthropic 的 Claude-1、2 和 3 模型 |
-| **OpenAI-Interface** | 用于自定义模型的 OpenAI API 接口 |
-| **Gemini** | 来自 Google 的 Gemini 1.5 模型 |
+| **OpenAI** | GPT-3.5、GPT-4 模型 |
+| **Claude** | Claude-1、Claude-2、Claude-3 模型 |
+| **Gemini** | Google Gemini 1.5 模型 |
+| **GGML 模型** | 本地量化模型直接推理 |
 | **其他** | 使用规则适配几乎任何接口 |
 
-### 🔧 配置
+### 🔧 配置示例：自定义提供者
 
-编辑 `Config.yaml` 文件来设置你的提供商。如果你想使用 GUI 进行配置，可以使用 [ChatBot](https://github.com/NGLSG/ChatBot) 项目轻松配置 `Config.yaml` 文件（配置完成后，你可以在 ChatBot 可执行文件的同一目录下找到 config.yaml，适当修改后可应用于本项目）。
-
-你也可以使用 [ChatBot](https://github.com/NGLSG/ChatBot) 项目，它非常方便地与 LLM 聊天。
+```yaml
+- enable: false
+  supportSystemRole: true
+  name: 测试2
+  model: o3-mini
+  apiPath: http://localhost:3032/v1/chat/completions
+  apiKeyRole:
+    key: nuul
+    role: HEADERS
+    header: "Authorization: Bearer "
+  headers:
+    header2: 1
+    anthropic-version: "\"2023-06-01\""
+  roles:
+    system: system
+    user: user
+    assistant: assistant
+  promptRole:
+    role:
+      suffix: messages
+      path: role
+      content: content
+      isStr: false
+    prompt:
+      suffix: messages
+      path: content
+      content: content
+      isStr: false
+  params:
+    - suffix: stream
+      path: ""
+      content: true
+      isStr: false
+    - suffix: model
+      path: ""
+      content: ${MODEL}
+      isStr: true
+  responseRole:
+    suffix: ""
+    content: result/message/content
+    callback: RESPONSE
+    stopFlag: ""
+  author: Ryoshi
+  version: 1.0
+  description: 自定义规则
+  supportModels: []
+```
 
 ### 📜 许可证
 
@@ -152,34 +198,34 @@ MIT - 免费用于商业和个人用途。详见 [LICENSE](LICENSE)。
 
 ### 🔍 概要
 
-UniAPIは、50以上のLLM APIを単一の**OpenAI互換RESTサーバー**に統合する**高性能C++ライブラリ**です。迅速な展開のために設計され、デフォルトでは**認証不要**で、動的プロバイダーのロードをサポートしています。
+UniAPI は、50 以上の LLM API を単一の **OpenAI 互換 REST サーバー** に統合する **高パフォーマンスな C++ ライブラリ** です。迅速な展開を目的としており、デフォルトで **認証は必要ありません** し、動的プロバイダーのロードをサポートしています。さらに、ローカルにクオンタイズされた GGML モデルを直接推論でき、追加の設定は必要ありません。
 
 ```bash
-# OpenAI標準エンドポイントを介して任意のLLMにアクセス
+# OpenAI 標準エンドポイントを経由して任意の LLM にアクセス
 curl -X POST http://localhost:8080/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model":"claude-3","messages":[{"role":"user","content":"こんにちは！"}]}'
+  -H "Content-Type: application/json" \
+  -d '{"model":"claude-3","messages":[{"role":"user","content":"こんにちは！"}]}'
 ```
 
 ### 🚀 クイックスタート（認証なし）
 
-#### 方法1：Dockerを使用（推奨）
+#### 方法 1：Docker を使用（推奨）
 
-##### 1. Dockerイメージの構築
+##### 1. Docker イメージの構築
 
 ```bash
 # リポジトリのクローン
 git clone --recursive https://github.com/NGLSG/UniAPI.git
 cd UniAPI
 
-# Dockerイメージの構築
+# Docker イメージの構築
 docker build -t uniapi:latest .
 ```
 
-##### 2. Dockerコンテナの実行
+##### 2. Docker コンテナの実行
 
 ```bash
-# デフォルトポート（8080）で実行
+# デフォルトポート (8080) で実行
 docker run -it --rm -p 8080:8080 uniapi:latest
 
 # カスタムポートで実行
@@ -189,9 +235,9 @@ docker run -it --rm -e PORT=9090 -p 9090:9090 uniapi:latest
 docker run -it --rm -p 8080:8080 -v $(pwd)/Config.yaml:/app/Config.yaml uniapi:latest
 ```
 
-#### 方法2：ローカルでコンパイル
+#### 方法 2：ローカルでのコンパイル
 
-##### 1. リポジトリとサブモジュールをクローン
+##### 1. リポジトリとサブモジュールのクローン
 
 ```bash
 git clone --recursive https://github.com/NGLSG/UniAPI.git
@@ -206,26 +252,25 @@ git submodule update --init --recursive
 # Ubuntu/Debian
 sudo apt-get update
 sudo apt-get install -y \
-    git cmake build-essential \
-    libvulkan-dev curl libcurl4-openssl-dev \
-    libjsoncpp-dev uuid-dev libssl-dev zlib1g-dev
-    
-# Optional database support
+    git cmake build-essential \
+    libvulkan-dev curl libcurl4-openssl-dev \
+    libjsoncpp-dev uuid-dev libssl-dev zlib1g-dev
+    
+# オプション：データベースサポート
 sudo apt-get install -y \
-    libmysqlclient-dev \
-    libsqlite3-dev \
-    libhiredis-dev
+    libmysqlclient-dev \
+    libsqlite3-dev \
+    libhiredis-dev
 
-# CentOS/RHEL 
+# CentOS/RHEL 
 sudo yum install -y \
-    git cmake gcc-c++ \
-    vulkan-devel curl libcurl-devel \
-    jsoncpp-devel libuuid-devel openssl-devel zlib-devel
-    
-# Optional database support
+    git cmake gcc-c++ \
+    vulkan-devel curl libcurl-devel \
+    jsoncpp-devel libuuid-devel openssl-devel zlib-devel
+    
+# オプション：データベースサポート
 sudo yum install -y \
-    mysql-devel sqlite-devel hiredis-devel
-    
+    mysql-devel sqlite-devel hiredis-devel
 ```
 
 ##### 3. プロジェクトのコンパイル
@@ -233,47 +278,93 @@ sudo yum install -y \
 ```bash
 mkdir build && cd build
 cmake .. \
-  -DCMAKE_CUDA_COMPILER=[CUDA_DIR]/bin/nvcc \  # オプションのCUDAコンパイラ
-  -DCMAKE_TOOLCHAIN_FILE=[vcpkg_dir]/scripts/buildsystems/vcpkg.cmake  # vcpkgを使用する場合
+  -DCMAKE_CUDA_COMPILER=[CUDA_DIR]/bin/nvcc \  # オプションの CUDA コンパイラ
+  -DCMAKE_TOOLCHAIN_FILE=[vcpkg_dir]/scripts/buildsystems/vcpkg.cmake  # vcpkg を使用する場合
 make -j4
 ```
 
 ##### 4. サーバーの実行
 
 ```bash
-./bin/UniAPI 8080  # ポートは変更可能
+./bin/UniAPI 8080  # ポートは変更可能
 ```
 
-➡️ **すぐにテスト**：`http://<your_ip>:8080/v1/chat/completions`にアクセス
+➡️ **すぐにテスト**：`http://<your_ip>:8080/v1/chat/completions` にアクセス
 
 ### ⚙️ 主な機能
 
 | 機能 | 説明 |
 |------|------|
-| **🔓 認証不要** | デフォルトでAPIキー不要 |
-| **⚡ 高速推論** | GPUアクセラレーションのためのオプションCUDAサポート |
-| **📡 REST標準** | 100% OpenAI互換エンドポイント（非OpenAIモデルでも） |
-| **🔄 設定** | 'Config.yaml'を編集してAPIを設定 |
+| **🔓 認証不要** | デフォルトで API キーは必要ありません |
+| **⚡ 高速推論** | オプションの CUDA サポートで GPU アクセラレーションを実現 |
+| **📦 ローカルクオンタイズモデル** | ローカルにクオンタイズされた GGML モデルを直接推論 |
+| **📡 REST 標準** | OpenAI 標準エンドポイントをサポート |
+| **🔄 動的構成** | `Config.yaml` を通じて API を柔軟に構成 |
+| **🔌 カスタムプロバイダー** | 任意のインターフェースをルールで適応し、高い拡張性を実現 |
 
-### 📦 サポートされるバックエンド
+### 📦 サポートされているバックエンド
 
 | プロバイダー | 説明 |
 |--------------|------|
-| **OpenAI** | OpenAIのGPT-3.5およびGPT-4モデル |
-| **Claude** | AnthropicのClaude-1、2、3モデル |
-| **OpenAI-Interface** | カスタムモデル用のOpenAI APIインターフェース |
-| **Gemini** | GoogleのGemini 1.5モデル |
-| **その他** | ルールを使用してほぼどんなインターフェースにも適応 |
+| **OpenAI** | GPT-3.5、GPT-4 モデル |
+| **Claude** | Claude-1、Claude-2、Claude-3 モデル |
+| **Gemini** | Google Gemini 1.5 モデル |
+| **GGML モデル** | ローカルにクオンタイズされたモデルの直接推論 |
+| **その他** | 任意のインターフェースをルールで構成 |
 
-### 🔧 設定
+### 🔧 設定例：カスタムプロバイダー
 
-`Config.yaml`ファイルを編集してプロバイダーを設定します。GUIで設定したい場合は、[ChatBot](https://github.com/NGLSG/ChatBot)プロジェクトを使用して`Config.yaml`ファイルを簡単に設定できます（設定完了後、ChatBot実行ファイルと同じディレクトリにconfig.yamlが見つかり、適切な修正を施してこのプロジェクトに適用できます）。
-
-また、[ChatBot](https://github.com/NGLSG/ChatBot)プロジェクトを使用すると、LLMとのチャットが非常に便利になります。
+```yaml
+- enable: false
+  supportSystemRole: true
+  name: 测试2
+  model: o3-mini
+  apiPath: http://localhost:3032/v1/chat/completions
+  apiKeyRole:
+    key: nuul
+    role: HEADERS
+    header: "Authorization: Bearer "
+  headers:
+    header2: 1
+    anthropic-version: "\"2023-06-01\""
+  roles:
+    system: system
+    user: user
+    assistant: assistant
+  promptRole:
+    role:
+      suffix: messages
+      path: role
+      content: content
+      isStr: false
+    prompt:
+      suffix: messages
+      path: content
+      content: content
+      isStr: false
+  params:
+    - suffix: stream
+      path: ""
+      content: true
+      isStr: false
+    - suffix: model
+      path: ""
+      content: ${MODEL}
+      isStr: true
+  responseRole:
+    suffix: ""
+    content: result/message/content
+    callback: RESPONSE
+    stopFlag: ""
+  author: Ryoshi
+  version: 1.0
+  description: 自定义规则
+  supportModels: []
+```
 
 ### 📜 ライセンス
 
-MIT - 商用および個人利用は無料。詳細は[LICENSE](LICENSE)をご覧ください。
+MIT - 商用および個人利用は無料です。詳細は [LICENSE](LICENSE) をご確認ください。
 
 ---
 
@@ -282,13 +373,13 @@ MIT - 商用および個人利用は無料。詳細は[LICENSE](LICENSE)をご�
 
 ### 🔍 Overview
 
-UniAPI is a **high-performance C++ library** that unifies 50+ LLM APIs into a single **OpenAI-compatible REST server**. Designed for rapid deployment, it requires **no authentication** by default and supports dynamic provider loading.
+UniAPI is a **high-performance C++ library** that consolidates 50+ LLM APIs into a single **OpenAI-compatible REST server**. Designed for rapid deployment, it operates **without authentication** by default, supports dynamic provider loading, and enables direct inference of local quantized GGML models without additional configuration.
 
 ```bash
 # Access any LLM via OpenAI-standard endpoint
 curl -X POST http://localhost:8080/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model":"claude-3","messages":[{"role":"user","content":"Hello!"}]}'
+  -H "Content-Type: application/json" \
+  -d '{"model":"claude-3","messages":[{"role":"user","content":"Hello!"}]}'
 ```
 
 ### 🚀 Quick Start (No Auth)
@@ -336,25 +427,25 @@ git submodule update --init --recursive
 # Ubuntu/Debian
 sudo apt-get update
 sudo apt-get install -y \
-    git cmake build-essential \
-    libvulkan-dev curl libcurl4-openssl-dev \
-    libjsoncpp-dev uuid-dev libssl-dev zlib1g-dev
-    
+    git cmake build-essential \
+    libvulkan-dev curl libcurl4-openssl-dev \
+    libjsoncpp-dev uuid-dev libssl-dev zlib1g-dev
+    
 # Optional database support
 sudo apt-get install -y \
-    libmysqlclient-dev \
-    libsqlite3-dev \
-    libhiredis-dev
+    libmysqlclient-dev \
+    libsqlite3-dev \
+    libhiredis-dev
 
-# CentOS/RHEL 
+# CentOS/RHEL 
 sudo yum install -y \
-    git cmake gcc-c++ \
-    vulkan-devel curl libcurl-devel \
-    jsoncpp-devel libuuid-devel openssl-devel zlib-devel
-    
+    git cmake gcc-c++ \
+    vulkan-devel curl libcurl-devel \
+    jsoncpp-devel libuuid-devel openssl-devel zlib-devel
+    
 # Optional database support
 sudo yum install -y \
-    mysql-devel sqlite-devel hiredis-devel
+    mysql-devel sqlite-devel hiredis-devel
 ```
 
 ##### 3. Compile Project
@@ -362,15 +453,15 @@ sudo yum install -y \
 ```bash
 mkdir build && cd build
 cmake .. \
-  -DCMAKE_CUDA_COMPILER=[CUDA_DIR]/bin/nvcc \  # Optional CUDA compiler
-  -DCMAKE_TOOLCHAIN_FILE=[vcpkg_dir]/scripts/buildsystems/vcpkg.cmake  # If using vcpkg
+  -DCMAKE_CUDA_COMPILER=[CUDA_DIR]/bin/nvcc \  # Optional CUDA compiler
+  -DCMAKE_TOOLCHAIN_FILE=[vcpkg_dir]/scripts/buildsystems/vcpkg.cmake  # If using vcpkg
 make -j4
 ```
 
 ##### 4. Run Server
 
 ```bash
-./bin/UniAPI 8080  # Port can be changed
+./bin/UniAPI 8080  # Port can be changed
 ```
 
 ➡️ **Immediately test** at `http://<your_ip>:8080/v1/chat/completions`
@@ -380,25 +471,71 @@ make -j4
 | Feature | Description |
 |---------|-------------|
 | **🔓 Zero Auth** | No API key required by default |
-| **⚡ Fast Inference** | Optional CUDA support for GPU-accelerated providers |
-| **📡 REST Standard** | 100% OpenAI-compatible endpoints (even for non-OpenAI models) |
-| **🔄 Configure** | Edit the 'Config.yaml' to configure your API |
+| **⚡ Fast Inference** | Optional CUDA support for GPU acceleration |
+| **📦 Local Quantized Models** | Direct inference of local quantized GGML models without extra configuration |
+| **📡 REST Standard** | 100% compatible with OpenAI endpoints |
+| **🔄 Dynamic Configuration** | Flexible API configuration via `Config.yaml` |
+| **🔌 Custom Providers** | Adapt to any interface using rule-based configuration |
 
 ### 📦 Supported Backends
 
 | Provider | Description |
 |----------|-------------|
-| **OpenAI** | OpenAI's GPT-3.5 and GPT-4 models |
-| **Claude** | Anthropic's Claude-1, 2, and 3 models |
-| **OpenAI-Interface** | OpenAI's API interface for custom models |
-| **Gemini** | Gemini 1.5 models from Google |
-| **Other** | Use rules to adapt to almost any interface |
+| **OpenAI** | GPT-3.5, GPT-4 models |
+| **Claude** | Claude-1, Claude-2, Claude-3 models |
+| **Gemini** | Google Gemini 1.5 models |
+| **GGML Models** | Direct inference of local quantized models |
+| **Others** | Configure any interface using rules |
 
-### 🔧 Configuration
+### 🔧 Configuration Example: Custom Provider
 
-Edit the `Config.yaml` file to set up your providers. If you want to use GUI to configure, you can use the [ChatBot](https://github.com/NGLSG/ChatBot) project to easily configure the `Config.yaml` file (After the configuration is completed, you can find config.yaml in the same directory as the ChatBot executable file, and the appropriate modification can be applied to this project).
-
-You can also use the [ChatBot](https://github.com/NGLSG/ChatBot) project, which is very convenient for chatting with LLMs.
+```yaml
+- enable: false
+  supportSystemRole: true
+  name: 测试2
+  model: o3-mini
+  apiPath: http://localhost:3032/v1/chat/completions
+  apiKeyRole:
+    key: nuul
+    role: HEADERS
+    header: "Authorization: Bearer "
+  headers:
+    header2: 1
+    anthropic-version: "\"2023-06-01\""
+  roles:
+    system: system
+    user: user
+    assistant: assistant
+  promptRole:
+    role:
+      suffix: messages
+      path: role
+      content: content
+      isStr: false
+    prompt:
+      suffix: messages
+      path: content
+      content: content
+      isStr: false
+  params:
+    - suffix: stream
+      path: ""
+      content: true
+      isStr: false
+    - suffix: model
+      path: ""
+      content: ${MODEL}
+      isStr: true
+  responseRole:
+    suffix: ""
+    content: result/message/content
+    callback: RESPONSE
+    stopFlag: ""
+  author: Ryoshi
+  version: 1.0
+  description: 自定义规则
+  supportModels: []
+```
 
 ### 📜 License
 
