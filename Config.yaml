@@ -5,7 +5,7 @@ openAi:
   proxy: ""
   useWebProxy: false
   endPoint: ""
-  supportedModels:
+  supportModels:
     [ "gpt-4o","gpt-4","gpt-3.5-turbo","gpt-3.5-turbo-16k","gpt-3.5-turbo-0613","gpt-3.5-turbo-16k-0613","gpt-4-0613","gpt-4o-0613" ]
 claude:
   enable: false
@@ -13,14 +13,14 @@ claude:
   userName: ""
   cookies: ""
   slackToken: ""
-  supportedModels:
+  supportModels:
     [ ]
 gemini:
   enable: false
   api_Key: ""
   endPoint: ""
   model: gemini-2.0-flash
-  supportedModels:
+  supportModels:
     [ "gemini-2.5-pro-preview-03-25","gemini-2.5-flash-preview-04-17","gemini-2.0-flash-exp","gemini-2.0-flash" ]
 grok:
   enable: false
@@ -33,7 +33,7 @@ grok:
     model: ""
     contextSize: 32000
     maxTokens: 4096
-  supportedModels:
+  supportModels:
     [ "grok-1.0","grok-1.5","grok-2.0" ]
 mistral:
   enable: false
@@ -46,7 +46,7 @@ mistral:
     model: ""
     contextSize: 32000
     maxTokens: 4096
-  supportedModels:
+  supportModels:
     [ ]
 qwen:
   enable: false
@@ -59,7 +59,7 @@ qwen:
     model: ""
     contextSize: 32000
     maxTokens: 4096
-  supportedModels:
+  supportModels:
     [ ]
 chatglm:
   enable: false
@@ -72,7 +72,7 @@ chatglm:
     model: ""
     contextSize: 32000
     maxTokens: 4096
-  supportedModels:
+  supportModels:
     [ ]
 hunyuan:
   enable: false
@@ -85,7 +85,7 @@ hunyuan:
     model: ""
     contextSize: 32000
     maxTokens: 4096
-  supportedModels:
+  supportModels:
     [ ]
 baichuan:
   enable: false
@@ -98,7 +98,7 @@ baichuan:
     model: ""
     contextSize: 32000
     maxTokens: 4096
-  supportedModels:
+  supportModels:
     [ ]
 sparkdesk:
   enable: false
@@ -111,7 +111,7 @@ sparkdesk:
     model: ""
     contextSize: 32000
     maxTokens: 4096
-  supportedModels:
+  supportModels:
     [ ]
 huoshan:
   enable: false
@@ -124,7 +124,7 @@ huoshan:
     model: ""
     contextSize: 32000
     maxTokens: 4096
-  supportedModels:
+  supportModels:
     [ ]
 claudeAPI:
   enable: false
@@ -132,7 +132,7 @@ claudeAPI:
   model: claude-3.5
   apiVersion: 2023-06-01
   endPoint: https://api.anthropic.com/v1/complete
-  supportedModels:
+  supportModels:
     [ "claude-1","claude-2","claude-3","claude-3.5","claude-3.7-sonnet" ]
 customGPTs:
   { }

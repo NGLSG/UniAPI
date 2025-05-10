@@ -338,10 +338,10 @@ namespace YAML
                     rhs.roles[role.first.as<std::string>()] = role.second.as<std::string>();
                 }
             }
-            if (node["supportedModels"] && node["supportedModels"].IsSequence())
+            if (node["supportModels"] && node["supportModels"].IsSequence())
             {
                 rhs.supportedModels.clear();
-                for (const auto& model : node["supportedModels"])
+                for (const auto& model : node["supportModels"])
                 {
                     rhs.supportedModels.push_back(model.as<std::string>());
                 }
@@ -406,7 +406,7 @@ namespace YAML
 
             // promptRole
             node["promptRole"] = rhs.promptRole;
-            node["supportedModels"] = rhs.supportedModels;
+            node["supportModels"] = rhs.supportedModels;
 
             // params 数组
             Node paramsNode(NodeType::Sequence);
@@ -437,7 +437,7 @@ namespace YAML
             node["model"] = data.model;
             node["apiVersion"] = data.apiVersion;
             node["endPoint"] = data._endPoint;
-            node["supportedModels"] = data.supportedModels;
+            node["supportModels"] = data.supportedModels;
             return node;
         }
 
@@ -448,10 +448,10 @@ namespace YAML
             data.model = node["model"].as<std::string>();
             data.apiVersion = node["apiVersion"].as<std::string>();
             data._endPoint = node["endPoint"].as<std::string>();
-            if (node["supportedModels"] && node["supportedModels"].IsSequence())
+            if (node["supportModels"] && node["supportModels"].IsSequence())
             {
                 data.supportedModels.clear();
-                for (const auto& model : node["supportedModels"])
+                for (const auto& model : node["supportModels"])
                 {
                     data.supportedModels.push_back(model.as<std::string>());
                 }
@@ -498,7 +498,7 @@ namespace YAML
             node["apiPath"] = data.apiPath;
             node["useLocalModel"] = data.useLocalModel;
             node["llamaData"] = data.llamaData;
-            node["supportedModels"] = data.supportedModels;
+            node["supportModels"] = data.supportedModels;
             return node;
         }
 
@@ -515,10 +515,10 @@ namespace YAML
                 data.useLocalModel = node["useLocalModel"].as<bool>();
             if (node["llamaData"])
                 data.llamaData = node["llamaData"].as<LLamaCreateInfo>();
-            if (node["supportedModels"] && node["supportedModels"].IsSequence())
+            if (node["supportModels"] && node["supportModels"].IsSequence())
             {
                 data.supportedModels.clear();
-                for (const auto& model : node["supportedModels"])
+                for (const auto& model : node["supportModels"])
                 {
                     data.supportedModels.push_back(model.as<std::string>());
                 }
@@ -541,7 +541,7 @@ namespace YAML
             node["api_Key"] = data._apiKey;
             node["endPoint"] = data._endPoint;
             node["model"] = data.model;
-            node["supportedModels"] = data.supportedModels;
+            node["supportModels"] = data.supportedModels;
             return node;
         }
 
@@ -558,10 +558,10 @@ namespace YAML
             {
                 data.model = "gemini-2.0-flash";
             }
-            if (node["supportedModels"] && node["supportedModels"].IsSequence())
+            if (node["supportModels"] && node["supportModels"].IsSequence())
             {
                 data.supportedModels.clear();
-                for (const auto& model : node["supportedModels"])
+                for (const auto& model : node["supportModels"])
                 {
                     data.supportedModels.push_back(model.as<std::string>());
                 }
@@ -585,7 +585,7 @@ namespace YAML
             node["userName"] = data.userName;
             node["cookies"] = data.cookies;
             node["slackToken"] = data.slackToken;
-            node["supportedModels"] = data.supportedModels;
+            node["supportModels"] = data.supportedModels;
             return node;
         }
 
@@ -600,10 +600,10 @@ namespace YAML
             data.enable = node["enable"].as<bool>();
             data.channelID = node["channelID"].as<std::string>();
             data.slackToken = node["slackToken"].as<std::string>();
-            if (node["supportedModels"] && node["supportedModels"].IsSequence())
+            if (node["supportModels"] && node["supportModels"].IsSequence())
             {
                 data.supportedModels.clear();
-                for (const auto& model : node["supportedModels"])
+                for (const auto& model : node["supportModels"])
                 {
                     data.supportedModels.push_back(model.as<std::string>());
                 }
@@ -628,7 +628,7 @@ namespace YAML
             node["proxy"] = data.proxy;
             node["useWebProxy"] = data.useWebProxy;
             node["endPoint"] = data._endPoint;
-            node["supportedModels"] = data.supportedModels;
+            node["supportModels"] = data.supportedModels;
 
             return node;
         }
@@ -644,10 +644,10 @@ namespace YAML
             }
             data.proxy = node["proxy"].as<std::string>();
             data._endPoint = node["endPoint"].as<std::string>();
-            if (node["supportedModels"] && node["supportedModels"].IsSequence())
+            if (node["supportModels"] && node["supportModels"].IsSequence())
             {
                 data.supportedModels.clear();
-                for (const auto& model : node["supportedModels"])
+                for (const auto& model : node["supportModels"])
                 {
                     data.supportedModels.push_back(model.as<std::string>());
                 }
