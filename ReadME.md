@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # 🌟 UniAPI 🌐
 
 <div align="center">
@@ -77,10 +76,26 @@ git submodule update --init --recursive
 ```bash
 # Ubuntu/Debian 系统
 sudo apt-get update
-sudo apt-get install -y git cmake build-essential libboost-all-dev libvulkan-dev curl libasio-dev libcurl4-openssl-dev
+sudo apt-get install -y \
+    git cmake build-essential \
+    libvulkan-dev curl libcurl4-openssl-dev \
+    libjsoncpp-dev uuid-dev libssl-dev zlib1g-dev
+    
+# 可选数据库支持
+sudo apt-get install -y \
+    libmysqlclient-dev \
+    libsqlite3-dev \
+    libhiredis-dev
 
 # CentOS/RHEL 系统
-sudo yum install -y git cmake gcc-c++ boost-devel vulkan-devel curl asio-devel libcurl-devel
+sudo yum install -y \
+    git cmake gcc-c++ \
+    vulkan-devel curl libcurl-devel \
+    jsoncpp-devel libuuid-devel openssl-devel zlib-devel
+    
+# 可选数据库支持
+sudo yum install -y \
+    mysql-devel sqlite-devel hiredis-devel
 ```
 
 ##### 3. 编译项目
@@ -88,7 +103,6 @@ sudo yum install -y git cmake gcc-c++ boost-devel vulkan-devel curl asio-devel l
 ```bash
 mkdir build && cd build
 cmake .. \
-  -DCROW_USE_BOOST=1 \          # 为 Crow HTTP 启用 Boost
   -DCMAKE_CUDA_COMPILER=[CUDA_DIR]/bin/nvcc \  # 可选 CUDA 编译器
   -DCMAKE_TOOLCHAIN_FILE=[vcpkg_dir]/scripts/buildsystems/vcpkg.cmake  # 如果使用 vcpkg
 make -j4
@@ -191,10 +205,27 @@ git submodule update --init --recursive
 ```bash
 # Ubuntu/Debian
 sudo apt-get update
-sudo apt-get install -y git cmake build-essential libboost-all-dev libvulkan-dev curl libasio-dev libcurl4-openssl-dev
+sudo apt-get install -y \
+    git cmake build-essential \
+    libvulkan-dev curl libcurl4-openssl-dev \
+    libjsoncpp-dev uuid-dev libssl-dev zlib1g-dev
+    
+# Optional database support
+sudo apt-get install -y \
+    libmysqlclient-dev \
+    libsqlite3-dev \
+    libhiredis-dev
 
-# CentOS/RHEL
-sudo yum install -y git cmake gcc-c++ boost-devel vulkan-devel curl asio-devel libcurl-devel
+# CentOS/RHEL 
+sudo yum install -y \
+    git cmake gcc-c++ \
+    vulkan-devel curl libcurl-devel \
+    jsoncpp-devel libuuid-devel openssl-devel zlib-devel
+    
+# Optional database support
+sudo yum install -y \
+    mysql-devel sqlite-devel hiredis-devel
+    
 ```
 
 ##### 3. プロジェクトのコンパイル
@@ -202,7 +233,6 @@ sudo yum install -y git cmake gcc-c++ boost-devel vulkan-devel curl asio-devel l
 ```bash
 mkdir build && cd build
 cmake .. \
-  -DCROW_USE_BOOST=1 \          # Crow HTTPのためのBoost有効化
   -DCMAKE_CUDA_COMPILER=[CUDA_DIR]/bin/nvcc \  # オプションのCUDAコンパイラ
   -DCMAKE_TOOLCHAIN_FILE=[vcpkg_dir]/scripts/buildsystems/vcpkg.cmake  # vcpkgを使用する場合
 make -j4
@@ -305,10 +335,26 @@ git submodule update --init --recursive
 ```bash
 # Ubuntu/Debian
 sudo apt-get update
-sudo apt-get install -y git cmake build-essential libboost-all-dev libvulkan-dev curl libasio-dev libcurl4-openssl-dev
+sudo apt-get install -y \
+    git cmake build-essential \
+    libvulkan-dev curl libcurl4-openssl-dev \
+    libjsoncpp-dev uuid-dev libssl-dev zlib1g-dev
+    
+# Optional database support
+sudo apt-get install -y \
+    libmysqlclient-dev \
+    libsqlite3-dev \
+    libhiredis-dev
 
-# CentOS/RHEL
-sudo yum install -y git cmake gcc-c++ boost-devel vulkan-devel curl asio-devel libcurl-devel
+# CentOS/RHEL 
+sudo yum install -y \
+    git cmake gcc-c++ \
+    vulkan-devel curl libcurl-devel \
+    jsoncpp-devel libuuid-devel openssl-devel zlib-devel
+    
+# Optional database support
+sudo yum install -y \
+    mysql-devel sqlite-devel hiredis-devel
 ```
 
 ##### 3. Compile Project
@@ -316,7 +362,6 @@ sudo yum install -y git cmake gcc-c++ boost-devel vulkan-devel curl asio-devel l
 ```bash
 mkdir build && cd build
 cmake .. \
-  -DCROW_USE_BOOST=1 \          # Enable Boost for Crow HTTP
   -DCMAKE_CUDA_COMPILER=[CUDA_DIR]/bin/nvcc \  # Optional CUDA compiler
   -DCMAKE_TOOLCHAIN_FILE=[vcpkg_dir]/scripts/buildsystems/vcpkg.cmake  # If using vcpkg
 make -j4
