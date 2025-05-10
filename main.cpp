@@ -1,7 +1,30 @@
-#include "crow.h"
+#include <drogon/drogon.h>
 #include <iostream>
 #include <string>
 #include "Impls/Bots.h"
+#define NOMINMAX
+#ifdef min
+#undef min
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+#ifdef max
+#undef max
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
+
+struct SseCharStreamState
+{
+    std::string pendingSendData; // Buffer for SSE messages waiting to be sent
+    bool botQueryFinished = false; // Has the bot finished generating all its responses?
+    bool doneMarkerSent = false; // Has "data: [DONE]\n\n" been added to pendingSendData?
+
+    // Constructor to initialize state if needed
+    SseCharStreamState() : botQueryFinished(false), doneMarkerSent(false)
+    {
+    }
+};
 
 long long GetTS()
 {
@@ -113,373 +136,420 @@ int main(int argc, char* argv[])
     }
 
 
-    // 创建应用实例
-    crow::SimpleApp app;
-
-    // 解析端口参数
-    uint16_t port = 8080; // 默认端口
+    uint16_t port = 8080;
     if (argc > 1)
     {
         try
         {
-            // 尝试将第一个参数转换为端口号
             port = static_cast<uint16_t>(std::stoi(argv[1]));
-            std::cout << "使用指定端口: " << port << std::endl;
+            LogInfo("使用指定端口: {0}", port);
         }
         catch (const std::exception& e)
         {
-            // 如果转换失败，使用默认端口
-            std::cout << "端口参数无效，使用默认端口: " << port << std::endl;
+            LogInfo("端口参数无效 '{0}', 使用默认端口: {1}. Error: {2}", argv[1], port, e.what());
         }
     }
     else
     {
-        std::cout << "未指定端口，使用默认端口: " << port << std::endl;
+        LogInfo("未指定端口，使用默认端口: {0}", port);
     }
 
-    CROW_ROUTE(app, "/v1/chat/completions").methods("POST"_method)
-    ([Bots](const crow::request& req)
-    {
-        // 准备响应对象
-        crow::json::wvalue 响应;
+    auto& app = drogon::app();
 
-        try
-        {
-            // 解析请求体中的JSON数据
-            auto 请求数据 = crow::json::load(req.body);
-
-            // 检查JSON是否有效
-            if (!请求数据)
-            {
-                响应["error"] = "无效的JSON格式";
-                return crow::response(400, 响应);
-            }
-
-            // 检查并提取model字段
-            if (!请求数据.has("model"))
-            {
-                响应["error"] = "缺少必要的model字段";
-                return crow::response(400, 响应);
-            }
-            std::string 模型名称 = 请求数据["model"].s();
-
-            // 检查stream参数，默认为false
-            bool 是否流式 = false;
-            if (请求数据.has("stream"))
-            {
-                是否流式 = 请求数据["stream"].b();
-            }
-
-            // 检查消息数组是否存在
-            if (!请求数据.has("messages"))
-            {
-                响应["error"] = "缺少必要的messages字段或格式不正确";
-                return crow::response(400, 响应);
-            }
-
-            // 创建处理后的消息列表
-            std::vector<std::pair<std::string, std::string>> 消息列表;
-
-            // 检查是否需要添加system角色消息
-            bool 需要添加系统消息 = true;
-
-            // 检查第一条消息是否是system角色
-            if (请求数据["messages"].size() > 0)
-            {
-                const auto& 第一条消息 = 请求数据["messages"][0];
-                if (第一条消息.has("role") && 第一条消息["role"].s() == "system")
-                {
-                    需要添加系统消息 = false;
-
-                    // 将系统消息添加到消息列表
-                    if (第一条消息.has("content"))
-                    {
-                        消息列表.push_back({"system", 第一条消息["content"].s()});
-                    }
-                    else
-                    {
-                        // 如果系统消息没有内容，添加默认内容
-                        消息列表.push_back({"system", "You're a helpful assistant."});
-                    }
-                }
-            }
-
-            // 如果需要添加系统消息（即第一条不是系统消息）
-            if (需要添加系统消息)
-            {
-                // 在消息列表开头添加默认的系统消息
-                消息列表.push_back({"system", "You're a helpful assistant."});
-            }
-
-            // 处理除最后一条外的所有用户消息
-            std::string lastPrompt = "";
-            size_t 起始索引 = 需要添加系统消息 ? 0 : 1; // 如果已有系统消息，从1开始；否则从0开始
-
-            for (size_t i = 起始索引; i < 请求数据["messages"].size() - 1; i++)
-            {
-                const auto& 消息 = 请求数据["messages"][i];
-
-                // 检查消息格式是否正确
-                if (!消息.has("role") || !消息.has("content"))
-                {
-                    响应["error"] = "消息格式不正确，必须包含role和content字段";
-                    return crow::response(400, 响应);
-                }
-
-                // 提取角色和内容
-                std::string 角色 = 消息["role"].s();
-                std::string 内容 = 消息["content"].s();
-
-                // 添加到消息列表
-                消息列表.push_back({角色, 内容});
-            }
-
-            // 将最后一个消息的内容保存到lastPrompt
-            if (请求数据["messages"].size() > 0)
-            {
-                // 获取最后一个消息
-                const auto& 最后消息 = 请求数据["messages"][请求数据["messages"].size() - 1];
-
-                // 检查最后一条消息是否包含content字段
-                if (最后消息.has("content"))
-                {
-                    // 将最后一个消息的内容保存到lastPrompt变量
-                    lastPrompt = 最后消息["content"].s();
-                }
-                else
-                {
-                    // 如果没有content字段，将lastPrompt设为空
-                    lastPrompt = "";
-                }
-            }
-
-            // 查找模型
-            auto bot = Bots.find(模型名称);
-            if (bot == Bots.end())
-            {
-                响应["error"] = "不支持的模型名称";
-                return crow::response(400, 响应);
-            }
-
-            // 构建历史记录
-            bot->second->BuildHistory(消息列表);
-            long long timeStamp = GetTS();
-            bot->second->SubmitAsync(lastPrompt, timeStamp);
-            //TODO 流式有bug暂时禁用
-            /*// 根据是否流式响应进行不同处理
-            if (是否流式)
-            {
-                // 创建流式响应
-                auto 流式响应 = std::make_shared<crow::response>(200);
-                // 设置流式响应头
-                流式响应->set_header("Content-Type", "text/event-stream");
-                流式响应->set_header("Cache-Control", "no-cache");
-                流式响应->set_header("Connection", "keep-alive");
-                流式响应->set_header("Transfer-Encoding", "chunked");
-
-                // 创建响应ID和时间戳
-                std::string 响应ID = "chatcmpl-" + std::to_string(timeStamp);
-                uint64_t 创建时间 = static_cast<uint64_t>(timeStamp / 1000); // 转换为秒
-
-                // 分离线程处理流式响应
-                std::thread([
-                        流式响应,
-                        botN = bot->second,
-                        timeStamp,
-                        响应ID,
-                        创建时间,
-                        模型名称
-                    ]() mutable
-                    {
-                        // 初始消息标记
-                        bool 是首条消息 = true;
-
-                        // 循环获取响应内容
-                        while (!botN->Finished(timeStamp))
+    app.registerHandler("/v1/models",
+                        [Bots](const drogon::HttpRequestPtr& req,
+                               std::function<void(const drogon::HttpResponsePtr&)>&& callback)
                         {
-                            // 获取增量内容 (直接就是增量)
-                            std::string 增量内容 = botN->GetResponse(timeStamp);
+                            Json::Value response_json;
+                            response_json["object"] = "list";
+                            Json::Value data_array(Json::arrayValue);
 
-                            // 如果有内容，则发送
-                            if (!增量内容.empty())
+                            for (const auto& bot_pair : Bots)
                             {
-                                // 构建OpenAI风格的流式响应
-                                crow::json::wvalue 消息块;
+                                Json::Value model_data;
+                                model_data["id"] = bot_pair.first;
+                                model_data["object"] = "model";
+                                model_data["owned_by"] = "artiverse";
+                                model_data["created"] = Json::UInt64(std::time(nullptr));
 
-                                // 如果是首条消息，添加更多元数据
-                                if (是首条消息)
-                                {
-                                    消息块["id"] = 响应ID;
-                                    消息块["object"] = "chat.completion.chunk";
-                                    消息块["created"] = 创建时间;
-                                    消息块["model"] = 模型名称;
-                                    是首条消息 = false;
-                                }
+                                Json::Value permissions_array(Json::arrayValue);
+                                Json::Value perm_obj;
+                                perm_obj["id"] = bot_pair.first;
+                                perm_obj["object"] = "model_permission";
+                                perm_obj["created"] = Json::UInt64(std::time(nullptr));
+                                permissions_array.append(perm_obj);
+                                model_data["permission"] = permissions_array;
 
-                                // 构建choices部分
-                                crow::json::wvalue 选择;
-                                crow::json::wvalue 增量;
-                                增量["content"] = 增量内容;
-                                // 使用std::move将左值转为右值引用
-                                选择["delta"] = std::move(增量);
-                                选择["index"] = 0;
-                                // 使用null而不是字符串"null"
-                                选择["finish_reason"] = "null";
+                                data_array.append(model_data);
+                            }
+                            response_json["data"] = data_array;
+                            auto resp = drogon::HttpResponse::newHttpJsonResponse(response_json);
+                            callback(resp);
+                        },
+                        {drogon::Get});
+    app.registerHandler("/v1/chat/completions",
+                        [Bots](const drogon::HttpRequestPtr& req,
+                               std::function<void(const drogon::HttpResponsePtr&)>&& callback)
+                        {
+                            Json::Value error_response_json;
+                            auto json_body_ptr = req->getJsonObject();
 
-                                crow::json::wvalue 选择列表 = crow::json::wvalue::list();
-                                // 使用std::move将左值转为右值引用
-                                选择列表[0] = std::move(选择);
-                                // 使用std::move将左值转为右值引用
-                                消息块["choices"] = std::move(选择列表);
+                            if (!json_body_ptr)
+                            {
+                                error_response_json["error"]["message"] = "无效的JSON格式";
+                                error_response_json["error"]["type"] = "invalid_request_error";
+                                auto resp = drogon::HttpResponse::newHttpJsonResponse(error_response_json);
+                                resp->setStatusCode(drogon::k400BadRequest);
+                                callback(resp);
+                                return;
+                            }
+                            const Json::Value& 请求数据 = *json_body_ptr;
 
-                                // 发送数据
-                                流式响应->write("data: " + 消息块.dump() + "\n\n");
+                            if (!请求数据.isMember("model") || !请求数据["model"].isString())
+                            {
+                                error_response_json["error"]["message"] = "缺少必要的model字段";
+                                error_response_json["error"]["type"] = "invalid_request_error";
+                                auto resp = drogon::HttpResponse::newHttpJsonResponse(error_response_json);
+                                resp->setStatusCode(drogon::k400BadRequest);
+                                callback(resp);
+                                return;
+                            }
+                            std::string 模型名称 = 请求数据["model"].asString();
+
+                            bool 是否流式 = false;
+                            if (请求数据.isMember("stream") && 请求数据["stream"].isBool())
+                            {
+                                是否流式 = 请求数据["stream"].asBool();
                             }
 
-                            // 短暂休眠以避免过度消耗CPU资源
-                            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                        }
+                            if (!请求数据.isMember("messages") || !请求数据["messages"].isArray() || 请求数据["messages"].empty())
+                            {
+                                error_response_json["error"]["message"] = "缺少必要的messages字段或格式不正确";
+                                error_response_json["error"]["type"] = "invalid_request_error";
+                                auto resp = drogon::HttpResponse::newHttpJsonResponse(error_response_json);
+                                resp->setStatusCode(drogon::k400BadRequest);
+                                callback(resp);
+                                return;
+                            }
 
-                        // 处理最后一个增量内容（在Finished返回true后可能仍有最后一个增量）
-                        std::string 最后增量内容 = botN->GetResponse(timeStamp);
-                        if (!最后增量内容.empty())
+                            std::vector<std::pair<std::string, std::string>> 消息列表;
+                            bool 需要添加系统消息 = true;
+                            const Json::Value& messages_json_array = 请求数据["messages"];
+
+                            if (messages_json_array.isValidIndex(0) && messages_json_array[Json::Value::ArrayIndex(0)].
+                                isMember("role") && messages_json_array[Json::Value::ArrayIndex(0)]["role"].asString()
+                                == "system")
+                            {
+                                需要添加系统消息 = false;
+                                if (messages_json_array[Json::Value::ArrayIndex(0)].isMember("content") &&
+                                    messages_json_array[Json::Value::ArrayIndex(0)]["content"].isString())
+                                {
+                                    消息列表.push_back({
+                                        "system", messages_json_array[Json::Value::ArrayIndex(0)]["content"].asString()
+                                    });
+                                }
+                                else
+                                {
+                                    消息列表.push_back({"system", "You're a helpful assistant."});
+                                }
+                            }
+
+                            if (需要添加系统消息)
+                            {
+                                消息列表.push_back({"system", "You're a helpful assistant."});
+                            }
+
+                            std::string lastPrompt = "";
+                            Json::Value::ArrayIndex startIndexInJson = 0;
+                            if (!需要添加系统消息)
+                            {
+                                startIndexInJson = 1;
+                            }
+
+                            for (Json::Value::ArrayIndex i = startIndexInJson; i < messages_json_array.size(); ++i)
+                            {
+                                const Json::Value& 消息_json = messages_json_array[i];
+                                if (!消息_json.isMember("role") || !消息_json.isMember("content") ||
+                                    !消息_json["role"].isString() || !消息_json["content"].isString())
+                                {
+                                    error_response_json["error"]["message"] = "消息格式不正确，必须包含role和content字段";
+                                    error_response_json["error"]["type"] = "invalid_request_error";
+                                    auto resp = drogon::HttpResponse::newHttpJsonResponse(error_response_json);
+                                    resp->setStatusCode(drogon::k400BadRequest);
+                                    callback(resp);
+                                    return;
+                                }
+                                std::string 角色 = 消息_json["role"].asString();
+                                std::string 内容 = 消息_json["content"].asString();
+
+                                if (i == messages_json_array.size() - 1)
+                                {
+                                    lastPrompt = 内容;
+                                }
+                                else
+                                {
+                                    消息列表.push_back({角色, 内容});
+                                }
+                            }
+                            if (messages_json_array.size() == 1 && startIndexInJson == 0)
+                            {
+                                const Json::Value& 唯一消息 = messages_json_array[Json::Value::ArrayIndex(0)];
+                                if (唯一消息.isMember("content") && 唯一消息["content"].isString())
+                                {
+                                    lastPrompt = 唯一消息["content"].asString();
+                                }
+                                else
+                                {
+                                    lastPrompt = "";
+                                }
+                            }
+
+                            auto bot_iter = Bots.find(模型名称);
+                            if (bot_iter == Bots.end())
+                            {
+                                error_response_json["error"]["message"] = "不支持的模型名称: " + 模型名称;
+                                error_response_json["error"]["type"] = "invalid_request_error";
+                                auto resp = drogon::HttpResponse::newHttpJsonResponse(error_response_json);
+                                resp->setStatusCode(drogon::k404NotFound);
+                                callback(resp);
+                                return;
+                            }
+                            auto bot = bot_iter->second;
+
+                            bot->BuildHistory(消息列表);
+                            long long timeStamp = GetTS();
+                            bot->SubmitAsync(lastPrompt, timeStamp);
+
+                            if (是否流式)
+                            {
+                                auto streamState = std::make_shared<SseCharStreamState>();
+
+                                auto streamCb_char_ptr =
+                                    [bot, timeStamp, 模型名称, streamState](
+                                    char* outputBuffer, std::size_t maxSize) -> std::size_t
+                                {
+                                    if (!streamState->pendingSendData.empty())
+                                    {
+                                        std::size_t bytesToCopy = min(
+                                            streamState->pendingSendData.length(), maxSize); // Using std::min
+                                        if (bytesToCopy > 0)
+                                        {
+                                            memcpy(outputBuffer, streamState->pendingSendData.data(), bytesToCopy);
+                                            streamState->pendingSendData.erase(0, bytesToCopy);
+                                        }
+                                        return bytesToCopy;
+                                    }
+
+                                    if (streamState->doneMarkerSent)
+                                    {
+                                        return 0;
+                                    }
+
+                                    bool generatedNewDataThisCall = false;
+
+                                    if (!streamState->botQueryFinished)
+                                    {
+                                        std::string 增量内容 = bot->GetResponse(timeStamp);
+
+                                        if (!增量内容.empty())
+                                        {
+                                            Json::Value 消息块;
+                                            std::string 响应ID = "chatcmpl-" + std::to_string(timeStamp);
+                                            Json::UInt64 创建时间 = static_cast<Json::UInt64>(timeStamp / 1000);
+                                            消息块["id"] = 响应ID;
+                                            消息块["object"] = "chat.completion.chunk";
+                                            消息块["created"] = 创建时间;
+                                            消息块["model"] = 模型名称;
+                                            Json::Value choices_array(Json::arrayValue);
+                                            Json::Value choice;
+                                            Json::Value delta;
+                                            delta["content"] = 增量内容;
+                                            choice["delta"] = delta;
+                                            choice["index"] = 0;
+                                            choice["finish_reason"] = Json::nullValue;
+                                            choices_array.append(choice);
+                                            消息块["choices"] = choices_array;
+                                            Json::StreamWriterBuilder builder;
+                                            builder["commentStyle"] = "None";
+                                            builder["indentation"] = "";
+                                            std::string chunk_str = Json::writeString(builder, 消息块);
+                                            streamState->pendingSendData.append("data: " + chunk_str + "\n\n");
+                                            generatedNewDataThisCall = true;
+                                        }
+
+                                        if (bot->Finished(timeStamp))
+                                        {
+                                            streamState->botQueryFinished = true;
+                                            Json::Value 完成消息;
+                                            std::string 响应ID = "chatcmpl-" + std::to_string(timeStamp);
+                                            Json::UInt64 创建时间 = static_cast<Json::UInt64>(timeStamp / 1000);
+                                            完成消息["id"] = 响应ID;
+                                            完成消息["object"] = "chat.completion.chunk";
+                                            完成消息["created"] = 创建时间;
+                                            完成消息["model"] = 模型名称;
+                                            Json::Value choices_array(Json::arrayValue);
+                                            Json::Value choice_val;
+                                            Json::Value delta_val;
+                                            delta_val["content"] = "";
+                                            // Delta with empty content for the "stop" signal chunk
+                                            choice_val["delta"] = delta_val;
+                                            choice_val["index"] = 0;
+                                            choice_val["finish_reason"] = "stop"; // Signal that the stream is stopping
+                                            choices_array.append(choice_val);
+                                            完成消息["choices"] = choices_array;
+                                            Json::StreamWriterBuilder builder;
+                                            builder["commentStyle"] = "None";
+                                            builder["indentation"] = "";
+                                            std::string final_chunk_str = Json::writeString(builder, 完成消息);
+                                            streamState->pendingSendData.append("data: " + final_chunk_str + "\n\n");
+                                            generatedNewDataThisCall = true;
+                                        }
+                                    }
+
+                                    if (streamState->botQueryFinished && !streamState->doneMarkerSent)
+                                    {
+                                        streamState->pendingSendData.append("data: [DONE]\n\n");
+                                        streamState->doneMarkerSent = true;
+                                        generatedNewDataThisCall = true;
+                                    }
+
+                                    if (!generatedNewDataThisCall && streamState->pendingSendData.empty() && !
+                                        streamState->doneMarkerSent)
+                                    {
+                                        Json::Value heartbeat_chunk;
+                                        long long current_ts_for_hb = GetTS();
+                                        std::string heartbeat_id = "chatcmpl-hb-" + std::to_string(timeStamp) + "-" +
+                                            std::to_string(current_ts_for_hb);
+                                        Json::UInt64 heartbeat_created = static_cast<Json::UInt64>(current_ts_for_hb /
+                                            1000);
+
+                                        heartbeat_chunk["id"] = heartbeat_id;
+                                        heartbeat_chunk["object"] = "chat.completion.chunk";
+                                        heartbeat_chunk["created"] = heartbeat_created;
+                                        heartbeat_chunk["model"] = 模型名称;
+                                        Json::Value choices_array(Json::arrayValue);
+                                        Json::Value choice;
+                                        Json::Value delta;
+                                        delta["content"] = "";
+                                        choice["delta"] = delta;
+                                        choice["index"] = 0;
+                                        choice["finish_reason"] = Json::nullValue;
+                                        choices_array.append(choice);
+                                        heartbeat_chunk["choices"] = choices_array;
+
+                                        Json::StreamWriterBuilder builder;
+                                        builder["commentStyle"] = "None";
+                                        builder["indentation"] = "";
+                                        std::string chunk_str = Json::writeString(builder, heartbeat_chunk);
+                                        streamState->pendingSendData.append("data: " + chunk_str + "\n\n");
+                                    }
+
+                                    if (!streamState->pendingSendData.empty())
+                                    {
+                                        std::size_t bytesToCopy = min(
+                                            streamState->pendingSendData.length(), maxSize); // Using std::min
+                                        if (bytesToCopy > 0)
+                                        {
+                                            memcpy(outputBuffer, streamState->pendingSendData.data(), bytesToCopy);
+                                            streamState->pendingSendData.erase(0, bytesToCopy);
+                                        }
+                                        return bytesToCopy;
+                                    }
+                                    return 0;
+                                };
+
+                                auto resp = drogon::HttpResponse::newStreamResponse(
+                                    streamCb_char_ptr,
+                                    "",
+                                    drogon::CT_CUSTOM,
+                                    "text/event-stream; charset=utf-8",
+                                    req
+                                );
+
+                                resp->setStatusCode(drogon::k200OK);
+                                resp->addHeader("Cache-Control", "no-cache");
+                                resp->addHeader("Connection", "keep-alive");
+                                resp->addHeader("Access-Control-Allow-Origin", "*");
+
+                                callback(resp);
+                            }
+                            else
+                            {
+                                auto captured_bot = bot;
+                                auto captured_callback = callback;
+                                std::string captured_lastPrompt = lastPrompt;
+                                std::string captured_模型名称 = 模型名称;
+
+                                std::thread(
+                                    [captured_bot, timeStamp, captured_模型名称, captured_lastPrompt, captured_callback]()
+                                    {
+                                        std::string 最终回复 = "";
+                                        while (!captured_bot->Finished(timeStamp))
+                                        {
+                                            std::string 增量内容 = captured_bot->GetResponse(timeStamp);
+                                            最终回复 += 增量内容;
+                                            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                                        }
+                                        std::string 最后增量内容 = captured_bot->GetResponse(timeStamp);
+                                        if (!最后增量内容.empty())
+                                        {
+                                            最终回复 += 最后增量内容;
+                                        }
+
+                                        Json::Value response_json;
+                                        std::string 响应ID = "chatcmpl-" + std::to_string(timeStamp);
+                                        Json::UInt64 创建时间 = static_cast<Json::UInt64>(timeStamp / 1000);
+
+                                        response_json["id"] = 响应ID;
+                                        response_json["object"] = "chat.completion";
+                                        response_json["created"] = 创建时间;
+                                        response_json["model"] = captured_模型名称;
+
+                                        Json::Value choices_array(Json::arrayValue);
+                                        Json::Value choice_item;
+                                        Json::Value message;
+                                        message["role"] = "assistant";
+                                        message["content"] = 最终回复;
+                                        choice_item["message"] = message;
+                                        choice_item["index"] = 0;
+                                        choice_item["finish_reason"] = "stop";
+                                        choices_array.append(choice_item);
+                                        response_json["choices"] = choices_array;
+
+                                        Json::Value usage;
+                                        usage["prompt_tokens"] = static_cast<int>(captured_lastPrompt.length() / 4 +
+                                            10);
+                                        usage["completion_tokens"] = static_cast<int>(最终回复.length() / 4);
+                                        usage["total_tokens"] = usage["prompt_tokens"].asInt() + usage[
+                                            "completion_tokens"].asInt();
+                                        response_json["usage"] = usage;
+
+                                        auto resp = drogon::HttpResponse::newHttpJsonResponse(response_json);
+                                        captured_callback(resp);
+                                    }).detach();
+                            }
+                        },
+                        {drogon::Post});
+
+    app.registerHandler("/",
+                        [](const drogon::HttpRequestPtr& req,
+                           std::function<void(const drogon::HttpResponsePtr&)>&& callback)
                         {
-                            // 构建最后一个增量的响应
-                            crow::json::wvalue 最后消息块;
-                            最后消息块["id"] = 响应ID;
-                            最后消息块["object"] = "chat.completion.chunk";
-                            最后消息块["created"] = 创建时间;
-                            最后消息块["model"] = 模型名称;
+                            auto resp = drogon::HttpResponse::newHttpResponse();
+                            resp->setBody("Chat API Server is running with Drogon!");
+                            resp->setContentTypeCode(drogon::CT_TEXT_PLAIN);
+                            callback(resp);
+                        },
+                        {drogon::Get});
 
-                            // 构建choices部分
-                            crow::json::wvalue 选择;
-                            crow::json::wvalue 增量;
-                            增量["content"] = 最后增量内容;
-                            选择["delta"] = std::move(增量);
-                            选择["index"] = 0;
-                            选择["finish_reason"] = "null";
 
-                            crow::json::wvalue 选择列表 = crow::json::wvalue::list();
-                            选择列表[0] = std::move(选择);
-                            最后消息块["choices"] = std::move(选择列表);
+    LogInfo("Drogon server starting on http://localhost:{0}", port);
+    // To set thread number, e.g., app.setThreadNum(std::thread::hardware_concurrency());
+    // To enable server header, e.g., app.enableServerHeader(true);
+    // To disable server header, e.g., app.enableServerHeader(false);
+    app.setLogLevel(trantor::Logger::kWarn); // Set Drogon's internal logger level
+    app.addListener("0.0.0.0", port);
+    app.run();
 
-                            // 发送最后的增量数据
-                            流式响应->write("data: " + 最后消息块.dump() + "\n\n");
-                        }
-
-                        // 发送完成消息
-                        crow::json::wvalue 完成消息;
-                        完成消息["id"] = 响应ID;
-                        完成消息["object"] = "chat.completion.chunk";
-                        完成消息["created"] = 创建时间;
-                        完成消息["model"] = 模型名称;
-
-                        crow::json::wvalue 选择列表 = crow::json::wvalue::list();
-                        crow::json::wvalue 选择;
-                        crow::json::wvalue 增量;
-
-                        // 空的delta表示消息结束
-                        // 使用std::move修复所有赋值
-                        选择["delta"] = std::move(增量);
-                        选择["index"] = 0;
-                        选择["finish_reason"] = "stop";
-
-                        选择列表[0] = std::move(选择);
-                        完成消息["choices"] = std::move(选择列表);
-
-                        // 发送最后的数据块和结束标记
-                        流式响应->write("data: " + 完成消息.dump() + "\n\n");
-                        流式响应->write("data: [DONE]\n\n");
-                        流式响应->write("0\r\n\r\n");
-                    }).detach();
-
-                // 返回流式响应
-                return std::move(*流式响应);
-            }
-            else*/
-            {
-                // 非流式响应，等待完成后一次性返回所有数据
-                std::string 最终回复 = "";
-
-                // 收集所有增量回复
-                while (!bot->second->Finished(timeStamp))
-                {
-                    // 获取增量响应并累加
-                    std::string 增量内容 = bot->second->GetResponse(timeStamp);
-                    最终回复 += 增量内容;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                }
-                auto 最后增量内容 = bot->second->GetResponse(timeStamp);
-                if (!最后增量内容.empty())
-                {
-                    最终回复 += 最后增量内容;
-                }
-
-                // 构建OpenAI风格的非流式响应
-                std::string 响应ID = "chatcmpl-" + std::to_string(timeStamp);
-                uint64_t 创建时间 = static_cast<uint64_t>(timeStamp / 1000); // 转换为秒
-
-                响应["id"] = 响应ID;
-                响应["object"] = "chat.completion";
-                响应["created"] = 创建时间;
-                响应["model"] = 模型名称;
-
-                // 构建选择部分
-                crow::json::wvalue 选择列表 = crow::json::wvalue::list();
-                crow::json::wvalue 选择;
-
-                // 构建消息
-                crow::json::wvalue 消息;
-                消息["role"] = "assistant";
-                消息["content"] = 最终回复;
-
-                选择["message"] = std::move(消息);
-                选择["index"] = 0;
-                选择["finish_reason"] = "stop";
-
-                选择列表[0] = std::move(选择);
-                响应["choices"] = std::move(选择列表);
-
-                // 添加用量统计（模拟数据）
-                crow::json::wvalue 用量;
-                用量["prompt_tokens"] = lastPrompt.length() / 4 + 10; // 简单估算
-                用量["completion_tokens"] = 最终回复.length() / 4;
-                用量["total_tokens"] = lastPrompt.length() / 4 + 最终回复.length() / 4 + 10;
-
-                响应["usage"] = std::move(用量);
-
-                // 返回非流式响应
-                return crow::response(响应);
-            }
-        }
-        catch (const std::exception& e)
-        {
-            // 处理异常
-            响应["error"] = std::string("处理请求时出错: ") + e.what();
-            return crow::response(500, 响应);
-        }
-    });
-
-    CROW_ROUTE(app, "/v1/models")
-    ([Bots](const crow::request& req)
-    {
-        crow::json::wvalue model_list = crow::json::wvalue::list();
-        int index = 0;
-        for (const auto& bot : Bots)
-        {
-            // 在Crow中，对json数组的添加是通过索引进行的，而不是push_back
-            crow::json::wvalue model;
-            model = bot.first;
-
-            // 使用索引添加到数组
-            model_list[index++] = std::move(model);
-        }
-
-        return crow::response(model_list);
-    });
-
-    // 启动服务器，使用指定的端口
-    std::cout << "服务器启动中，监听端口: " << port << std::endl;
-    app.port(port).multithreaded().run();
     return 0;
 }

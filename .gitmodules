@@ -1,9 +1,6 @@
 [submodule "External/yaml-cpp"]
 	path = External/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp.git
-[submodule "External/crow"]
-	path = External/crow
-	url = https://github.com/CrowCpp/Crow.git
 [submodule "External/spdlog"]
 	path = External/spdlog
 	url = https://github.com/gabime/spdlog.git
@@ -13,3 +10,6 @@
 [submodule "External/json"]
 	path = External/json
 	url = https://github.com/nlohmann/json.git
+[submodule "External/drogon"]
+	path = External/drogon
+	url = https://github.com/drogonframework/drogon.git

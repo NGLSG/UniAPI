@@ -10,15 +10,13 @@ option(GGML_CUDA_USE_CUBLASLT "使用 cuBLASLt (需要 CUDA 12+)" ON)
 option(GGML_CUDA_FORCE_MMQ "强制使用 CUDA MMQ (如可用)" ON)
 
 
-# 添加Boost asio组件
-find_package(Boost REQUIRED)
-
 # 添加子目录
+add_subdirectory(drogon)
 add_subdirectory(json)
 add_subdirectory(llama-cpp)
 add_subdirectory(yaml-cpp)
 add_subdirectory(spdlog)
-add_subdirectory(crow)
+
 find_package(CURL REQUIRED)
 find_package(Vulkan REQUIRED)
 
@@ -48,14 +46,13 @@ add_library(uniLib INTERFACE)
 
 # 链接所需库
 target_link_libraries(uniLib INTERFACE
+        drogon
         nlohmann_json::nlohmann_json  # json库
         yaml-cpp::yaml-cpp            # yaml-cpp库
         llama                         # llama.cpp库
         CURL::libcurl                 # curl库
         ${Vulkan_LIBRARIES}           # Vulkan库
         spdlog::spdlog                # 日志库
-        Boost::boost                  # Boost库
-        Crow                          # Crow框架库
 )
 target_include_directories(uniLib INTERFACE
         ${Vulkan_INCLUDE_DIRS})
