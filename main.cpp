@@ -544,10 +544,7 @@ int main(int argc, char* argv[])
 
 
     LogInfo("Drogon server starting on http://localhost:{0}", port);
-    // To set thread number, e.g., app.setThreadNum(std::thread::hardware_concurrency());
-    // To enable server header, e.g., app.enableServerHeader(true);
-    // To disable server header, e.g., app.enableServerHeader(false);
-    app.setLogLevel(trantor::Logger::kWarn); // Set Drogon's internal logger level
+    app.setLogLevel(trantor::Logger::kWarn);
     app.addListener("0.0.0.0", port);
     app.run();
 
