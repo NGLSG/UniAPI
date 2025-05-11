@@ -529,6 +529,7 @@ std::string CustomRule_Impl::sendRequest(std::string data, size_t ts)
 {
     try
     {
+        LogInfo("转发数据: {0}", data);
         int retry_count = 0;
         while (retry_count < 3)
         {
