@@ -218,6 +218,7 @@ int main(int argc, char* argv[])
                                 return;
                             }
                             const Json::Value& 请求数据 = *json_body_ptr;
+                            LogInfo("收到数据: {0}", 请求数据.toStyledString());
 
                             if (!请求数据.isMember("model") || !请求数据["model"].isString())
                             {
