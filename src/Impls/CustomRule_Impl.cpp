@@ -468,7 +468,7 @@ void JsonPathBuilder::addValueAtPath(json& jsonObj, const vector<string>& path, 
 void JsonPathBuilder::addPath(const string& pathStr, const string& value)
 {
     vector<string> pathParts = split(pathStr, '/');
-    std::erase_if(pathParts, [](const string& s) { return s.empty(); });
+    erase_if(pathParts, [](const string& s) { return s.empty(); });
     addValueAtPath(rootJson, pathParts, value);
 }
 
@@ -529,7 +529,6 @@ std::string CustomRule_Impl::sendRequest(std::string data, size_t ts)
 {
     try
     {
-        LogInfo("转发数据: {0}", data);
         int retry_count = 0;
         while (retry_count < 3)
         {

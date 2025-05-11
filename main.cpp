@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
                         {
                             Json::Value error_response_json;
                             auto json_body_ptr = req->getJsonObject();
-
+                            LogInfo("收到数据: {0}", json_body_ptr->toStyledString());
                             if (!json_body_ptr)
                             {
                                 error_response_json["error"]["message"] = "无效的JSON格式";
@@ -218,7 +218,7 @@ int main(int argc, char* argv[])
                                 return;
                             }
                             const Json::Value& 请求数据 = *json_body_ptr;
-                            LogInfo("收到数据: {0}", 请求数据.toStyledString());
+
 
                             if (!请求数据.isMember("model") || !请求数据["model"].isString())
                             {
