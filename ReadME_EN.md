@@ -12,6 +12,9 @@
 </div>
 
 ---
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date)](https://www.star-history.com/#NGLSG/UniAPI&Date)
 
 <a id="how-to-support-this-project"></a>
 ## 🌟 How to Support This Project
