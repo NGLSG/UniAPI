@@ -39,9 +39,6 @@ WORKDIR /app
 # 复制项目文件
 COPY . .
 
-# 确保Config.yaml在容器中存在
-COPY Config.yaml /app/Config.yaml
-
 # 初始化并更新git子模块
 RUN git submodule init && git submodule update
 

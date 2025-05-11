@@ -10,6 +10,7 @@ struct LLamaCreateInfo
     std::string model = "";
     int contextSize = 32000; //32k
     int maxTokens = 4096;
+    int requirePermission = 0;
 };
 
 struct ClaudeAPICreateInfo
@@ -20,6 +21,7 @@ struct ClaudeAPICreateInfo
     std::string apiVersion = "2023-06-01";
     std::string _endPoint = "https://api.anthropic.com/v1/complete";
     std::vector<std::string> supportedModels;
+    int requirePermission = 0;
 };
 
 struct OpenAIBotCreateInfo
@@ -31,6 +33,7 @@ struct OpenAIBotCreateInfo
     std::string proxy = "";
     std::string _endPoint = "";
     std::vector<std::string> supportedModels;
+    int requirePermission = 0;
 };
 
 struct GPTLikeCreateInfo
@@ -43,6 +46,7 @@ struct GPTLikeCreateInfo
     std::string apiPath = "";
     LLamaCreateInfo llamaData;
     std::vector<std::string> supportedModels;
+    int requirePermission = 0;
 
     GPTLikeCreateInfo()
     {
@@ -72,6 +76,7 @@ struct ClaudeBotCreateInfo
     std::string userName;
     std::string cookies;
     std::vector<std::string> supportedModels;
+    int requirePermission = 0;
 };
 
 struct GeminiBotCreateInfo
@@ -81,6 +86,7 @@ struct GeminiBotCreateInfo
     std::string _endPoint;
     std::string model = "gemini-2.0-flash";
     std::vector<std::string> supportedModels;
+    int requirePermission = 0;
 };
 
 
@@ -141,10 +147,24 @@ struct CustomRule
     std::unordered_map<std::string, std::string> roles{{"system", ""}, {"user", ""}, {"assistant", ""}};
     ResponseRole responseRole{"data: ", "choices/delta/content", "RESPONSE", "[DONE"};
     std::vector<std::string> supportedModels;
+    int requirePermission = 0;
 };
+
+struct UserInfo
+{
+    std::string nickName = "";
+    std::string email = "";
+    std::string passwd = "";
+    int permissions = 0;
+    std::vector<std::string> authKeys;
+    float money = 0;
+};
+
 
 struct Configure
 {
+    bool enableAuth = false;
+    UserInfo admin = {"admin", "null", "123456", 999};
     OpenAIBotCreateInfo openAi;
     ClaudeBotCreateInfo claude;
     GeminiBotCreateInfo gemini;
@@ -422,6 +442,10 @@ namespace YAML
                     i++;
                 }
             }
+            if (node["requirePermission"])
+            {
+                rhs.requirePermission = node["requirePermission"].as<int>();
+            }
 
             return true;
         }
@@ -435,6 +459,7 @@ namespace YAML
             node["name"] = rhs.name;
             node["model"] = rhs.model;
             node["apiPath"] = rhs.apiPath;
+            node["requirePermission"] = rhs.requirePermission;
 
             // 嵌套结构
             node["apiKeyRole"] = rhs.apiKeyRole;
@@ -503,6 +528,7 @@ namespace YAML
             node["apiVersion"] = data.apiVersion;
             node["endPoint"] = data._endPoint;
             node["supportModels"] = data.supportedModels;
+            node["requirePermission"] = data.requirePermission;
             return node;
         }
 
@@ -525,6 +551,10 @@ namespace YAML
             {
                 data.supportedModels = {"claude-3.5", "claude-3", "claude-2"};
             }
+            if (node["requirePermission"])
+            {
+                data.requirePermission = node["requirePermission"].as<int>();
+            }
             return true;
         }
     };
@@ -538,6 +568,7 @@ namespace YAML
             node["model"] = data.model;
             node["contextSize"] = data.contextSize;
             node["maxTokens"] = data.maxTokens;
+            node["requirePermission"] = data.requirePermission;
             return node;
         }
 
@@ -546,6 +577,10 @@ namespace YAML
             data.model = node["model"].as<std::string>();
             data.contextSize = node["contextSize"].as<int>();
             data.maxTokens = node["maxTokens"].as<int>();
+            if (node["requirePermission"])
+            {
+                data.requirePermission = node["requirePermission"].as<int>();
+            }
             return true;
         }
     };
@@ -564,6 +599,7 @@ namespace YAML
             node["useLocalModel"] = data.useLocalModel;
             node["llamaData"] = data.llamaData;
             node["supportModels"] = data.supportedModels;
+            node["requirePermission"] = data.requirePermission;
             return node;
         }
 
@@ -572,6 +608,10 @@ namespace YAML
             data.enable = node["enable"].as<bool>();
             data.api_key = node["api_key"].as<std::string>();
             data.model = node["model"].as<std::string>();
+            if (node["requirePermission"])
+            {
+                data.requirePermission = node["requirePermission"].as<int>();
+            }
             if (node["apiHost"])
                 data.apiHost = node["apiHost"].as<std::string>();
             if (node["apiPath"])
@@ -607,6 +647,7 @@ namespace YAML
             node["endPoint"] = data._endPoint;
             node["model"] = data.model;
             node["supportModels"] = data.supportedModels;
+            node["requirePermission"] = data.requirePermission;
             return node;
         }
 
@@ -615,6 +656,10 @@ namespace YAML
             data._apiKey = node["api_Key"].as<std::string>();
             data.enable = node["enable"].as<bool>();
             data._endPoint = node["endPoint"].as<std::string>();
+            if (node["requirePermission"])
+            {
+                data.requirePermission = node["requirePermission"].as<int>();
+            }
             if (node["model"])
             {
                 data.model = node["model"].as<std::string>();
@@ -651,6 +696,7 @@ namespace YAML
             node["cookies"] = data.cookies;
             node["slackToken"] = data.slackToken;
             node["supportModels"] = data.supportedModels;
+            node["requirePermission"] = data.requirePermission;
             return node;
         }
 
@@ -659,6 +705,10 @@ namespace YAML
             if (!node["channelID"])
             {
                 return false;
+            }
+            if (node["requirePermission"])
+            {
+                data.requirePermission = node["requirePermission"].as<int>();
             }
             data.cookies = node["cookies"].as<std::string>();
             data.userName = node["userName"].as<std::string>();
@@ -694,6 +744,7 @@ namespace YAML
             node["useWebProxy"] = data.useWebProxy;
             node["endPoint"] = data._endPoint;
             node["supportModels"] = data.supportedModels;
+            node["requirePermission"] = data.requirePermission;
 
             return node;
         }
@@ -703,6 +754,10 @@ namespace YAML
             data.enable = node["enable"].as<bool>();
             data.api_key = node["api_key"].as<std::string>();
             data.useWebProxy = node["useWebProxy"].as<bool>();
+            if (node["requirePermission"])
+            {
+                data.requirePermission = node["requirePermission"].as<int>();
+            }
             if (node["model"])
             {
                 data.model = node["model"].as<std::string>();
@@ -731,6 +786,8 @@ namespace YAML
         static Node encode(const Configure& config)
         {
             Node node;
+            node["enableAuth"] = config.enableAuth;
+            node["admin"] = config.admin;
             node["openAi"] = config.openAi;
             node["claude"] = config.claude;
             node["gemini"] = config.gemini;
@@ -750,6 +807,14 @@ namespace YAML
 
         static bool decode(const Node& node, Configure& config)
         {
+            if (node["enableAuth"])
+            {
+                config.enableAuth = node["enableAuth"].as<bool>();
+            }
+            if (node["admin"])
+            {
+                config.admin = node["admin"].as<UserInfo>();
+            }
             if (node["claudeAPI"])
             {
                 config.claudeAPI = node["claudeAPI"].as<ClaudeAPICreateInfo>();
@@ -795,6 +860,53 @@ namespace YAML
             if (node["customRules"])
                 config.customRules = node["customRules"].as<std::vector<CustomRule>>();
             return true;
+        }
+    };
+
+    template <>
+    struct convert<UserInfo>
+    {
+        static Node encode(const UserInfo& data)
+        {
+            Node node;
+            node["nickname"] = data.nickName;
+            node["password"] = data.passwd;
+            node["permission"] = data.permissions;
+            Node keys;
+            for (const auto& key : data.authKeys)
+            {
+                keys.push_back(key);
+            }
+            node["money"] = data.money;
+            return node;
+        }
+
+        static bool decode(const Node& node, UserInfo& data)
+        {
+            if (node["nickname"])
+            {
+                data.nickName = node["nickname"].as<std::string>();
+            }
+            if (node["password"])
+            {
+                data.passwd = node["password"].as<std::string>();
+            }
+            if (node["permission"])
+            {
+                data.permissions = node["permission"].as<int>();
+            }
+            if (node["money"])
+            {
+                data.money = node["money"].as<int>();
+            }
+            if (node["authKeys"])
+            {
+                data.authKeys.clear();
+                for (const auto& key : node["authKeys"])
+                {
+                    data.authKeys.push_back(key.as<std::string>());
+                }
+            }
         }
     };
 }

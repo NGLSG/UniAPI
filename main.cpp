@@ -51,6 +51,72 @@ Json::StreamWriterBuilder getUTF8JsonWriter()
     return builder;
 }
 
+static llama_context* ctx = nullptr;
+
+
+int estimate_tokens(const std::string& text)
+{
+    if (text.empty())
+    {
+        return 0;
+    }
+
+    int token_count = 0;
+    int char_count = 0;
+    bool in_whitespace = false;
+    bool in_special = false;
+
+    for (char c : text)
+    {
+        char_count++;
+
+        if (isspace(c))
+        {
+            if (!in_whitespace)
+            {
+                in_whitespace = true;
+                token_count++;
+            }
+            continue;
+        }
+        else
+        {
+            in_whitespace = false;
+        }
+
+        if (ispunct(c) || !isalnum(c))
+        {
+            token_count++;
+            in_special = true;
+            continue;
+        }
+        else if (in_special)
+        {
+            in_special = false;
+        }
+        if ((c & 0x80) && char_count > 0)
+        {
+            unsigned char uc = static_cast<unsigned char>(c);
+            if (uc >= 0xE0)
+            {
+                token_count++;
+            }
+        }
+
+        if (char_count % 4 == 0 && !in_whitespace && !in_special)
+        {
+            token_count++;
+        }
+    }
+
+    if (!in_whitespace && char_count % 4 != 0)
+    {
+        token_count++;
+    }
+
+    return max(1, static_cast<int>(token_count * 1.3));
+}
+
 int main(int argc, char* argv[])
 {
     Logger::Init();
@@ -346,6 +412,8 @@ int main(int argc, char* argv[])
                             uint32_t top_k = 40;
                             float pres_pen = 0.0;
                             float freq_pen = 0.0;
+                            std::string model;
+                            model = bot->GetModel();
 
                             if (请求数据.isMember("temperature") && !请求数据["temperature"].asString().empty())
                             {
@@ -540,7 +608,8 @@ int main(int argc, char* argv[])
                                 std::string captured_模型名称 = 模型名称;
 
                                 std::thread(
-                                    [captured_bot, timeStamp, captured_模型名称, captured_lastPrompt, captured_callback]()
+                                    [captured_bot, timeStamp, captured_模型名称, captured_lastPrompt, captured_callback,
+                                        model]()
                                     {
                                         std::string 最终回复 = "";
                                         while (!captured_bot->Finished(timeStamp))
@@ -580,9 +649,8 @@ int main(int argc, char* argv[])
                                         response_json["choices"] = choices_array;
 
                                         Json::Value usage;
-                                        usage["prompt_tokens"] = static_cast<int>(captured_lastPrompt.length() / 4 +
-                                            10);
-                                        usage["completion_tokens"] = static_cast<int>(最终回复.length() / 4);
+                                        usage["prompt_tokens"] = estimate_tokens(captured_lastPrompt);
+                                        usage["completion_tokens"] = estimate_tokens(最终回复);
                                         usage["total_tokens"] = usage["prompt_tokens"].asInt() + usage[
                                             "completion_tokens"].asInt();
                                         response_json["usage"] = usage;
