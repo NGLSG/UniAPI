@@ -45,13 +45,25 @@ class ChatBot
 public:
     friend class StringExecutor;
     virtual std::string Submit(std::string prompt, size_t timeStamp, std::string role = Role::User,
-                               std::string convid = "default", bool async = false) = 0;
+                               std::string convid = "default", float temp = 0.7f,
+                               float top_p = 0.9f,
+                               uint32_t top_k = 40u,
+                               float pres_pen = 0.0f,
+                               float freq_pen = 0.0f, bool async = false) = 0;
 
     virtual void BuildHistory(const std::vector<std::pair<std::string, std::string>>& history) =0;
     virtual std::string GetModel() =0;
 
-    void SubmitAsync(std::string prompt, size_t timeStamp, std::string role = Role::User,
-                     std::string convid = "default")
+    void SubmitAsync(
+        std::string prompt,
+        size_t timeStamp,
+        std::string role = Role::User,
+        std::string convid = "default",
+        float temp = 0.7f,
+        float top_p = 0.9f,
+        uint32_t top_k = 40u,
+        float pres_pen = 0.0f,
+        float freq_pen = 0.0f)
     {
         {
             std::lock_guard<std::mutex> lock(forceStopMutex);
@@ -59,8 +71,12 @@ public:
         }
         lastFinalResponse = "";
         std::get<1>(Response[timeStamp]) = false;
-        std::thread([=] { Submit(prompt, timeStamp, role, convid, true); }).detach();
+        std::thread([=]
+        {
+            Submit(prompt, timeStamp, role, convid, temp, top_p, top_k, pres_pen, freq_pen, true);
+        }).detach();
     }
+
 
     std::string GetLastRawResponse()
     {

@@ -113,6 +113,13 @@ struct PromptRole
     ParamsRole prompt;
 };
 
+struct CustomVariable
+{
+    std::string name = "";
+    bool isStr = false;
+    std::string value = "";
+};
+
 struct CustomRule
 {
     bool enable = false;
@@ -124,11 +131,12 @@ struct CustomRule
     std::string model = "";
     std::string apiPath =
         "https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:streamGenerateContent?key=${API_KEY}";
-
+    std::vector<CustomVariable> vars;
     APIKeyRole apiKeyRole;
     //SYSTEM,USER,ASSISTANT
     PromptRole promptRole;
     std::vector<ParamsRole> params;
+    std::vector<ParamsRole> extraMust;
     std::unordered_map<std::string, std::string> headers;
     std::unordered_map<std::string, std::string> roles{{"system", ""}, {"user", ""}, {"assistant", ""}};
     ResponseRole responseRole{"data: ", "choices/delta/content", "RESPONSE", "[DONE"};
@@ -293,6 +301,34 @@ namespace YAML
         }
     };
 
+    template <>
+    struct convert<CustomVariable>
+    {
+        static bool decode(const Node& node, CustomVariable& rhs)
+        {
+            if (!node.IsMap())
+            {
+                return false;
+            }
+            if (node["name"])
+                rhs.name = node["name"].as<std::string>();
+            if (node["value"])
+                rhs.value = node["value"].as<std::string>();
+            if (node["isStr"])
+                rhs.isStr = node["isStr"].as<bool>();
+            return true;
+        }
+
+        static Node encode(const CustomVariable& rhs)
+        {
+            Node node;
+            node["name"] = rhs.name;
+            node["value"] = rhs.value;
+            node["isStr"] = rhs.isStr;
+            return node;
+        }
+    };
+
     // CustomRule 结构体的转换模板
     template <>
     struct convert<CustomRule>
@@ -371,6 +407,21 @@ namespace YAML
                 rhs.version = node["version"].as<std::string>();
             if (node["description"])
                 rhs.description = node["description"].as<std::string>();
+            if (node["vars"])
+                for (const auto& var : node["vars"])
+                {
+                    rhs.vars.push_back(var.as<CustomVariable>());
+                }
+            if (node["extraMust"])
+            {
+                int i = 0;
+                rhs.extraMust.clear();
+                for (const auto& must : node["extraMust"])
+                {
+                    rhs.extraMust.emplace_back(must.as<ParamsRole>());
+                    i++;
+                }
+            }
 
             return true;
         }
@@ -396,6 +447,13 @@ namespace YAML
             }
             node["headers"] = headersNode;
 
+            Node varsNode;
+            for (const auto& var : rhs.vars)
+            {
+                varsNode.push_back(var);
+            }
+            node["vars"] = varsNode;
+
             // roles 映射
             Node rolesNode;
             for (const auto& role : rhs.roles)
@@ -403,6 +461,13 @@ namespace YAML
                 rolesNode[role.first] = role.second;
             }
             node["roles"] = rolesNode;
+
+            Node extraNode;
+            for (const auto& extra : rhs.extraMust)
+            {
+                extraNode.push_back(extra);
+            }
+            node["extraMust"] = extraNode;
 
             // promptRole
             node["promptRole"] = rhs.promptRole;

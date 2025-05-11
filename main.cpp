@@ -1,5 +1,4 @@
 #include <drogon/drogon.h>
-#include <iostream>
 #include <string>
 #include "Impls/Bots.h"
 #define NOMINMAX
@@ -318,7 +317,43 @@ int main(int argc, char* argv[])
 
                             bot->BuildHistory(消息列表);
                             long long timeStamp = GetTS();
-                            bot->SubmitAsync(lastPrompt, timeStamp);
+                            float temp = 0.7;
+                            float top_p = 0.9;
+                            uint32_t top_k = 40;
+                            float pres_pen = 0.0;
+                            float freq_pen = 0.0;
+
+                            // 检查 temperature 是否存在且不为空
+                            if (请求数据.isMember("temperature") && !请求数据["temperature"].asString().empty())
+                            {
+                                temp = std::stof(请求数据["temperature"].asString());
+                            }
+
+                            // 检查 top_p 是否存在且不为空
+                            if (请求数据.isMember("top_p") && !请求数据["top_p"].asString().empty())
+                            {
+                                top_p = std::stof(请求数据["top_p"].asString());
+                            }
+
+                            // 检查 top_k 是否存在且不为空
+                            if (请求数据.isMember("top_k") && !请求数据["top_k"].asString().empty())
+                            {
+                                top_k = static_cast<uint32_t>(std::stoi(请求数据["top_k"].asString()));
+                            }
+
+                            // 检查 presence_penalty 是否存在且不为空
+                            if (请求数据.isMember("presence_penalty") && !请求数据["presence_penalty"].asString().empty())
+                            {
+                                pres_pen = std::stof(请求数据["presence_penalty"].asString());
+                            }
+
+                            // 检查 frequency_penalty 是否存在且不为空
+                            if (请求数据.isMember("frequency_penalty") && !请求数据["frequency_penalty"].asString().empty())
+                            {
+                                freq_pen = std::stof(请求数据["frequency_penalty"].asString());
+                            }
+                            bot->SubmitAsync(lastPrompt, timeStamp, Role::User, "default", temp, top_p, top_k, pres_pen,
+                                             freq_pen);
 
                             if (是否流式)
                             {
@@ -372,6 +407,7 @@ int main(int argc, char* argv[])
                                             Json::StreamWriterBuilder builder;
                                             builder["commentStyle"] = "None";
                                             builder["indentation"] = "";
+                                            builder["emitUTF8"] = true;
                                             std::string chunk_str = Json::writeString(builder, 消息块);
                                             streamState->pendingSendData.append("data: " + chunk_str + "\n\n");
                                             generatedNewDataThisCall = true;
@@ -515,6 +551,7 @@ int main(int argc, char* argv[])
                                         choice_item["finish_reason"] = "stop";
                                         choices_array.append(choice_item);
                                         response_json["choices"] = choices_array;
+                                        response_json["emitUTF8"] = true;
 
                                         Json::Value usage;
                                         usage["prompt_tokens"] = static_cast<int>(captured_lastPrompt.length() / 4 +

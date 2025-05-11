@@ -48,11 +48,11 @@ add_library(uniLib INTERFACE)
 target_link_libraries(uniLib INTERFACE
         drogon
         nlohmann_json::nlohmann_json  # json库
-        yaml-cpp::yaml-cpp            # yaml-cpp库
         llama                         # llama.cpp库
         CURL::libcurl                 # curl库
         ${Vulkan_LIBRARIES}           # Vulkan库
         spdlog::spdlog                # 日志库
+        yaml-cpp::yaml-cpp            # yaml-cpp库
 )
 target_include_directories(uniLib INTERFACE
         ${Vulkan_INCLUDE_DIRS})

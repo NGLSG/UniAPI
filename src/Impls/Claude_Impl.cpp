@@ -310,7 +310,8 @@ std::string Claude::sendRequest(std::string data, size_t ts)
 }
 
 // 提交用户消息并获取响应
-std::string Claude::Submit(std::string prompt, size_t timeStamp, std::string role, std::string convid, bool async)
+std::string Claude::Submit(std::string prompt, size_t timeStamp, std::string role, std::string convid, float temp,
+                           float top_p, uint32_t top_k, float pres_pen, float freq_pen, bool async)
 {
     try
     {
@@ -343,6 +344,11 @@ std::string Claude::Submit(std::string prompt, size_t timeStamp, std::string rol
         std::string data = "{\n"
             "  \"model\": \"" + claude_data_.model + "\",\n"
             "  \"max_tokens\": 4096,\n"
+            "\"temperature\":" + std::to_string(temp) + ",\n"
+            "\"top_k\":" + std::to_string(top_k) + ",\n"
+            "\"top_p\":" + std::to_string(top_p) + ",\n"
+            "\"presence_penalty\":" + std::to_string(pres_pen) + "\n"
+            "\"frequency_penalty\":" + std::to_string(freq_pen) + "\n"
             "  \"messages\": " +
             Conversation[convid_].dump()
             + "}\n";
@@ -463,7 +469,8 @@ void Claude::Add(std::string name)
     Save(name);
 }
 
-std::string ClaudeInSlack::Submit(std::string text, size_t timeStamp, std::string role, std::string convid, bool async)
+std::string ClaudeInSlack::Submit(std::string text, size_t timeStamp, std::string role, std::string convid, float temp,
+                                  float top_p, uint32_t top_k, float pres_pen, float freq_pen, bool async)
 {
     try
     {

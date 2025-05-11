@@ -391,7 +391,8 @@ void ChatGPT::BuildHistory(const std::vector<std::pair<std::string, std::string>
     }
 }
 
-std::string ChatGPT::Submit(std::string prompt, size_t timeStamp, std::string role, std::string convid, bool async)
+std::string ChatGPT::Submit(std::string prompt, size_t timeStamp, std::string role, std::string convid, float temp,
+                            float top_p, uint32_t top_k, float pres_pen, float freq_pen, bool async)
 {
     try
     {
@@ -423,6 +424,11 @@ std::string ChatGPT::Submit(std::string prompt, size_t timeStamp, std::string ro
         std::string data = "{\n"
             "  \"model\": \"" + chat_data_.model + "\",\n"
             "  \"stream\": true,\n"
+            "\"temperature\":" + std::to_string(temp) + ",\n"
+            "\"top_k\":" + std::to_string(top_k) + ",\n"
+            "\"top_p\":" + std::to_string(top_p) + ",\n"
+            "\"presence_penalty\":" + std::to_string(pres_pen) + "\n"
+            "\"frequency_penalty\":" + std::to_string(freq_pen) + "\n"
             "  \"messages\": " +
             Conversation[convid_].dump()
             + "}\n";

@@ -218,7 +218,8 @@ LLama::LLama(const LLamaCreateInfo& data, const std::string& sysr): llamaData(da
     LogInfo("LLama: 初始化完成，上下文大小: {0}, 最大令牌数: {1}", llamaData.contextSize, llamaData.maxTokens);
 }
 
-std::string LLama::Submit(std::string prompt, size_t timeStamp, std::string role, std::string convid, bool async)
+std::string LLama::Submit(std::string prompt, size_t timeStamp, std::string role, std::string convid, float temp, float top_p, uint32_t top_k, float
+                          pres_pen, float freq_pen, bool async)
 {
     // 检查上下文是否已初始化
     if (!ctx)

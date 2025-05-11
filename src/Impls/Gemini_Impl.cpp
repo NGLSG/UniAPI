@@ -222,7 +222,9 @@ std::string Gemini::sendRequest(std::string data, size_t ts)
 }
 
 
-std::string Gemini::Submit(std::string prompt, size_t timeStamp, std::string role, std::string convid, bool async)
+std::string Gemini::Submit(std::string prompt, size_t timeStamp, std::string role, std::string convid, float temp,
+                           float top_p, uint32_t top_k, float
+                           pres_pen, float freq_pen, bool async)
 {
     try
     {
@@ -249,7 +251,13 @@ std::string Gemini::Submit(std::string prompt, size_t timeStamp, std::string rol
         }
         history.emplace_back(ask);
         Conversation[convid] = history;
-        std::string data = "{\"contents\":" + Conversation[convid].dump() + "}";
+        std::string data = "{\"contents\":" + Conversation[convid].dump() + ",\n";
+        data += "generationConfig:{\n\"temperature\":" + std::to_string(temp) + ",\n\"topP\":" + std::to_string(top_p) +
+            ",\n\"topK\":" +
+            std::to_string(top_k) + ",\n\"presencePenalty\":" + std::to_string(pres_pen) + ",\n\"frequencyPenalty\":"
+            +
+            std::to_string(freq_pen) + ",\n}\n}";
+        cout << data << std::endl;
 
         std::string res = sendRequest(data, timeStamp);
 
@@ -396,7 +404,5 @@ void Gemini::BuildHistory(const std::vector<std::pair<std::string, std::string>>
             ask["parts"][0]["text"] = it.second;
             this->history.emplace_back(ask);
         }
-
     }
-
 }
