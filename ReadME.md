@@ -16,7 +16,13 @@
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date)](https://www.star-history.com/#NGLSG/UniAPI&Date)
+<a href="https://www.star-history.com/#NGLSG/UniAPI&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date" />
+ </picture>
+</a>
 
 <a id="how-to-support-this-project"></a>
 
