@@ -13,18 +13,6 @@
 #endif
 
 
-struct SseCharStreamState
-{
-    std::string pendingSendData; // Buffer for SSE messages waiting to be sent
-    bool botQueryFinished = false; // Has the bot finished generating all its responses?
-    bool doneMarkerSent = false; // Has "data: [DONE]\n\n" been added to pendingSendData?
-
-    // Constructor to initialize state if needed
-    SseCharStreamState() : botQueryFinished(false), doneMarkerSent(false)
-    {
-    }
-};
-
 long long GetTS()
 {
     // 使用C++11的chrono库获取当前时间点
@@ -36,6 +24,31 @@ long long GetTS()
     ).count();
 
     return 时间戳_毫秒;
+}
+
+
+struct SseCharStreamState
+{
+    std::string pendingSendData;
+    bool botQueryFinished = false;
+    bool doneMarkerSent = false;
+
+    SseCharStreamState() :
+        botQueryFinished(false),
+        doneMarkerSent(false)
+    {
+    }
+};
+
+// 辅助函数：获取统一配置的 JSON 写入器
+Json::StreamWriterBuilder getUTF8JsonWriter()
+{
+    Json::StreamWriterBuilder builder;
+    builder["commentStyle"] = "None";
+    builder["indentation"] = "";
+    builder["emitUTF8"] = true; // 禁止 Unicode 转义
+    builder["encoding"] = "UTF-8"; // 明确指定编码
+    return builder;
 }
 
 int main(int argc, char* argv[])
@@ -198,6 +211,8 @@ int main(int argc, char* argv[])
                                 error_response_json["error"]["message"] = "无效的JSON格式";
                                 error_response_json["error"]["type"] = "invalid_request_error";
                                 auto resp = drogon::HttpResponse::newHttpJsonResponse(error_response_json);
+                                resp->setContentTypeCodeAndCustomString(drogon::CT_APPLICATION_JSON,
+                                                                        "application/json; charset=utf-8");
                                 resp->setStatusCode(drogon::k400BadRequest);
                                 callback(resp);
                                 return;
@@ -209,6 +224,8 @@ int main(int argc, char* argv[])
                                 error_response_json["error"]["message"] = "缺少必要的model字段";
                                 error_response_json["error"]["type"] = "invalid_request_error";
                                 auto resp = drogon::HttpResponse::newHttpJsonResponse(error_response_json);
+                                resp->setContentTypeCodeAndCustomString(drogon::CT_APPLICATION_JSON,
+                                                                        "application/json; charset=utf-8");
                                 resp->setStatusCode(drogon::k400BadRequest);
                                 callback(resp);
                                 return;
@@ -226,6 +243,8 @@ int main(int argc, char* argv[])
                                 error_response_json["error"]["message"] = "缺少必要的messages字段或格式不正确";
                                 error_response_json["error"]["type"] = "invalid_request_error";
                                 auto resp = drogon::HttpResponse::newHttpJsonResponse(error_response_json);
+                                resp->setContentTypeCodeAndCustomString(drogon::CT_APPLICATION_JSON,
+                                                                        "application/json; charset=utf-8");
                                 resp->setStatusCode(drogon::k400BadRequest);
                                 callback(resp);
                                 return;
@@ -235,9 +254,9 @@ int main(int argc, char* argv[])
                             bool 需要添加系统消息 = true;
                             const Json::Value& messages_json_array = 请求数据["messages"];
 
-                            if (messages_json_array.isValidIndex(0) && messages_json_array[Json::Value::ArrayIndex(0)].
-                                isMember("role") && messages_json_array[Json::Value::ArrayIndex(0)]["role"].asString()
-                                == "system")
+                            if (messages_json_array.isValidIndex(0) &&
+                                messages_json_array[Json::Value::ArrayIndex(0)].isMember("role") &&
+                                messages_json_array[Json::Value::ArrayIndex(0)]["role"].asString() == "system")
                             {
                                 需要添加系统消息 = false;
                                 if (messages_json_array[Json::Value::ArrayIndex(0)].isMember("content") &&
@@ -274,6 +293,8 @@ int main(int argc, char* argv[])
                                     error_response_json["error"]["message"] = "消息格式不正确，必须包含role和content字段";
                                     error_response_json["error"]["type"] = "invalid_request_error";
                                     auto resp = drogon::HttpResponse::newHttpJsonResponse(error_response_json);
+                                    resp->setContentTypeCodeAndCustomString(drogon::CT_APPLICATION_JSON,
+                                                                            "application/json; charset=utf-8");
                                     resp->setStatusCode(drogon::k400BadRequest);
                                     callback(resp);
                                     return;
@@ -309,6 +330,8 @@ int main(int argc, char* argv[])
                                 error_response_json["error"]["message"] = "不支持的模型名称: " + 模型名称;
                                 error_response_json["error"]["type"] = "invalid_request_error";
                                 auto resp = drogon::HttpResponse::newHttpJsonResponse(error_response_json);
+                                resp->setContentTypeCodeAndCustomString(drogon::CT_APPLICATION_JSON,
+                                                                        "application/json; charset=utf-8");
                                 resp->setStatusCode(drogon::k404NotFound);
                                 callback(resp);
                                 return;
@@ -323,31 +346,26 @@ int main(int argc, char* argv[])
                             float pres_pen = 0.0;
                             float freq_pen = 0.0;
 
-                            // 检查 temperature 是否存在且不为空
                             if (请求数据.isMember("temperature") && !请求数据["temperature"].asString().empty())
                             {
                                 temp = std::stof(请求数据["temperature"].asString());
                             }
 
-                            // 检查 top_p 是否存在且不为空
                             if (请求数据.isMember("top_p") && !请求数据["top_p"].asString().empty())
                             {
                                 top_p = std::stof(请求数据["top_p"].asString());
                             }
 
-                            // 检查 top_k 是否存在且不为空
                             if (请求数据.isMember("top_k") && !请求数据["top_k"].asString().empty())
                             {
                                 top_k = static_cast<uint32_t>(std::stoi(请求数据["top_k"].asString()));
                             }
 
-                            // 检查 presence_penalty 是否存在且不为空
                             if (请求数据.isMember("presence_penalty") && !请求数据["presence_penalty"].asString().empty())
                             {
                                 pres_pen = std::stof(请求数据["presence_penalty"].asString());
                             }
 
-                            // 检查 frequency_penalty 是否存在且不为空
                             if (请求数据.isMember("frequency_penalty") && !请求数据["frequency_penalty"].asString().empty())
                             {
                                 freq_pen = std::stof(请求数据["frequency_penalty"].asString());
@@ -358,15 +376,16 @@ int main(int argc, char* argv[])
                             if (是否流式)
                             {
                                 auto streamState = std::make_shared<SseCharStreamState>();
+                                std::shared_ptr<std::string> 最终回复 = std::make_shared<std::string>();
 
                                 auto streamCb_char_ptr =
-                                    [bot, timeStamp, 模型名称, streamState](
+                                    [bot, timeStamp, 模型名称, streamState, 最终回复](
                                     char* outputBuffer, std::size_t maxSize) -> std::size_t
                                 {
                                     if (!streamState->pendingSendData.empty())
                                     {
                                         std::size_t bytesToCopy = min(
-                                            streamState->pendingSendData.length(), maxSize); // Using std::min
+                                            streamState->pendingSendData.length(), maxSize);
                                         if (bytesToCopy > 0)
                                         {
                                             memcpy(outputBuffer, streamState->pendingSendData.data(), bytesToCopy);
@@ -385,7 +404,7 @@ int main(int argc, char* argv[])
                                     if (!streamState->botQueryFinished)
                                     {
                                         std::string 增量内容 = bot->GetResponse(timeStamp);
-
+                                        *最终回复 += 增量内容;
                                         if (!增量内容.empty())
                                         {
                                             Json::Value 消息块;
@@ -398,16 +417,15 @@ int main(int argc, char* argv[])
                                             Json::Value choices_array(Json::arrayValue);
                                             Json::Value choice;
                                             Json::Value delta;
+
                                             delta["content"] = 增量内容;
                                             choice["delta"] = delta;
                                             choice["index"] = 0;
                                             choice["finish_reason"] = Json::nullValue;
                                             choices_array.append(choice);
                                             消息块["choices"] = choices_array;
-                                            Json::StreamWriterBuilder builder;
-                                            builder["commentStyle"] = "None";
-                                            builder["indentation"] = "";
-                                            builder["emitUTF8"] = true;
+
+                                            auto builder = getUTF8JsonWriter();
                                             std::string chunk_str = Json::writeString(builder, 消息块);
                                             streamState->pendingSendData.append("data: " + chunk_str + "\n\n");
                                             generatedNewDataThisCall = true;
@@ -426,19 +444,23 @@ int main(int argc, char* argv[])
                                             Json::Value choices_array(Json::arrayValue);
                                             Json::Value choice_val;
                                             Json::Value delta_val;
-                                            delta_val["content"] = "";
-                                            // Delta with empty content for the "stop" signal chunk
+                                            if (!最终回复->empty())
+                                                delta_val["content"] = "";
+                                            else
+                                            {
+                                                delta_val["content"] = bot->GetLastRawResponse();
+                                            }
                                             choice_val["delta"] = delta_val;
                                             choice_val["index"] = 0;
-                                            choice_val["finish_reason"] = "stop"; // Signal that the stream is stopping
+                                            choice_val["finish_reason"] = "stop";
                                             choices_array.append(choice_val);
                                             完成消息["choices"] = choices_array;
-                                            Json::StreamWriterBuilder builder;
-                                            builder["commentStyle"] = "None";
-                                            builder["indentation"] = "";
+
+                                            auto builder = getUTF8JsonWriter();
                                             std::string final_chunk_str = Json::writeString(builder, 完成消息);
                                             streamState->pendingSendData.append("data: " + final_chunk_str + "\n\n");
                                             generatedNewDataThisCall = true;
+                                            LogInfo("返回结果: {0}", *最终回复);
                                         }
                                     }
 
@@ -473,9 +495,9 @@ int main(int argc, char* argv[])
                                         choices_array.append(choice);
                                         heartbeat_chunk["choices"] = choices_array;
 
-                                        Json::StreamWriterBuilder builder;
-                                        builder["commentStyle"] = "None";
-                                        builder["indentation"] = "";
+                                        auto builder = getUTF8JsonWriter();
+                                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
                                         std::string chunk_str = Json::writeString(builder, heartbeat_chunk);
                                         streamState->pendingSendData.append("data: " + chunk_str + "\n\n");
                                     }
@@ -483,7 +505,7 @@ int main(int argc, char* argv[])
                                     if (!streamState->pendingSendData.empty())
                                     {
                                         std::size_t bytesToCopy = min(
-                                            streamState->pendingSendData.length(), maxSize); // Using std::min
+                                            streamState->pendingSendData.length(), maxSize);
                                         if (bytesToCopy > 0)
                                         {
                                             memcpy(outputBuffer, streamState->pendingSendData.data(), bytesToCopy);
@@ -531,6 +553,10 @@ int main(int argc, char* argv[])
                                         {
                                             最终回复 += 最后增量内容;
                                         }
+                                        if (最终回复.empty())
+                                        {
+                                            最终回复 = captured_bot->GetLastRawResponse();
+                                        }
 
                                         Json::Value response_json;
                                         std::string 响应ID = "chatcmpl-" + std::to_string(timeStamp);
@@ -551,7 +577,6 @@ int main(int argc, char* argv[])
                                         choice_item["finish_reason"] = "stop";
                                         choices_array.append(choice_item);
                                         response_json["choices"] = choices_array;
-                                        response_json["emitUTF8"] = true;
 
                                         Json::Value usage;
                                         usage["prompt_tokens"] = static_cast<int>(captured_lastPrompt.length() / 4 +
@@ -561,7 +586,12 @@ int main(int argc, char* argv[])
                                             "completion_tokens"].asInt();
                                         response_json["usage"] = usage;
 
-                                        auto resp = drogon::HttpResponse::newHttpJsonResponse(response_json);
+                                        auto builder = getUTF8JsonWriter();
+                                        std::string json_str = Json::writeString(builder, response_json);
+                                        auto resp = drogon::HttpResponse::newHttpResponse();
+                                        resp->setBody(json_str);
+                                        resp->setContentTypeCodeAndCustomString(drogon::CT_APPLICATION_JSON,
+                                            "application/json; charset=utf-8");
                                         captured_callback(resp);
                                     }).detach();
                             }
