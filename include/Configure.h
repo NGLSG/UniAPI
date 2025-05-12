@@ -907,6 +907,7 @@ namespace YAML
                     data.authKeys.push_back(key.as<std::string>());
                 }
             }
+            return true;
         }
     };
 }
