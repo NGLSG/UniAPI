@@ -11,37 +11,6 @@
   <a href="https://hub.docker.com/r/ryoshi541/uniapi"><img src="https://img.shields.io/badge/Docker-Available-2496ED?logo=docker" alt="Docker"></a>
 </div>
 
----
-## Star History
-
-<a href="https://www.star-history.com/#NGLSG/UniAPI&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date" />
- </picture>
-</a>
-
-<a id="how-to-support-this-project"></a>
-## 🌟 How to Support This Project
-
-We are committed to continuously improving UniAPI and adding new features. Your support is crucial for the ongoing development of this project. Here are a few ways you can help:
-
-- **Give Us a Star**  
-  If you find UniAPI useful, please give us a star on [GitHub](https://github.com/NGLSG/UniAPI). It helps us gain more visibility and attract more contributors.
-
-- **Contribute to the Project**  
-  We welcome contributions from the community! Whether it's fixing bugs, adding new features, or improving documentation, every contribution is valuable. To get started, simply fork the repository and submit a pull request.
-
-- **Spread the Word**  
-  Share UniAPI with your friends, colleagues, and on social media. The more people who know about this project, the better!
-
-- **Provide Feedback**  
-  Your feedback is important to us. If you have any suggestions, ideas, or encounter any issues, please don't hesitate to [open an issue on GitHub](https://github.com/NGLSG/UniAPI/issues).
-
-Thank you for your support! Together, we can make UniAPI even better.
-
----
 
 ## 📋 Table of Contents
 
@@ -257,7 +226,41 @@ UniAPI uses rule-based configuration to adapt to different API interfaces. Below
 ```
 
 ---
+## Star History
+
+<a href="https://www.star-history.com/#NGLSG/UniAPI&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date" />
+ </picture>
+</a>
+
+<a id="how-to-support-this-project"></a>
+## 🌟 How to Support This Project
+
+We are committed to continuously improving UniAPI and adding new features. Your support is crucial for the ongoing development of this project. Here are a few ways you can help:
+
+- **Give Us a Star**  
+  If you find UniAPI useful, please give us a star on [GitHub](https://github.com/NGLSG/UniAPI). It helps us gain more visibility and attract more contributors.
+
+- **Contribute to the Project**  
+  We welcome contributions from the community! Whether it's fixing bugs, adding new features, or improving documentation, every contribution is valuable. To get started, simply fork the repository and submit a pull request.
+
+- **Spread the Word**  
+  Share UniAPI with your friends, colleagues, and on social media. The more people who know about this project, the better!
+
+- **Provide Feedback**  
+  Your feedback is important to us. If you have any suggestions, ideas, or encounter any issues, please don't hesitate to [open an issue on GitHub](https://github.com/NGLSG/UniAPI/issues).
+
+Thank you for your support! Together, we can make UniAPI even better.
+
+---
+
+---
 
 <a id="license"></a>
 ## 📜 License
 MIT - Free for commercial and personal use. See [LICENSE](LICENSE) for details.
+
+---

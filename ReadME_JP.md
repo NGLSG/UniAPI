@@ -12,36 +12,6 @@
 </div>
 
 ---
-## Star History
-
-<a href="https://www.star-history.com/#NGLSG/UniAPI&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date" />
- </picture>
-</a>
-
-<a id="how-to-support-this-project"></a>
-## 🌟 このプロジェクトをサポートする方法
-
-私たちは UniAPI の継続的な改善と新機能の追加に努めています。皆様のサポートはこのプロジェクトの継続的な発展にとって非常に重要です。以下のような方法でご支援いただけます：
-
-- **スターをつけてください**  
-  UniAPI が役立つと思ったら、[GitHub](https://github.com/NGLSG/UniAPI) でスターをつけてください。これにより、私たちの可視性が高まり、より多くのコントリビューターを引き付けることができます。
-
-- **プロジェクトに貢献する**  
-  コミュニティからの貢献を歓迎します！バグの修正、新機能の追加、またはドキュメントの改善など、どんな貢献も貴重です。始めは簡単です。リポジトリをフォークしてプルリクエストを送信するだけです。
-
-- **このプロジェクトを共有する**  
-  UniAPI を友達、同僚、またはソーシャルメディアで共有してください。このプロジェクトを知っている人が多いほど良いです！
-
-- **フィードバックを提供する**  
-  あなたのフィードバックは私たちにとって重要です。提案、アイデア、または問題が発生した場合は、遠慮せずに [GitHub](https://github.com/NGLSG/UniAPI/issues) で issue を開いてください。
-
-皆様のサポートをありがとうございます！皆様と一緒に UniAPI をさらに向上させましょう！
-
----
 
 ## 📋 目次
 
@@ -279,9 +249,43 @@ UniAPI は、ルールベースの設定を使用して異なる API インタ�
 ```
 
 ---
+## Star History
+
+<a href="https://www.star-history.com/#NGLSG/UniAPI&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date" />
+ </picture>
+</a>
+
+<a id="how-to-support-this-project"></a>
+## 🌟 このプロジェクトをサポートする方法
+
+私たちは UniAPI の継続的な改善と新機能の追加に努めています。皆様のサポートはこのプロジェクトの継続的な発展にとって非常に重要です。以下のような方法でご支援いただけます：
+
+- **スターをつけてください**  
+  UniAPI が役立つと思ったら、[GitHub](https://github.com/NGLSG/UniAPI) でスターをつけてください。これにより、私たちの可視性が高まり、より多くのコントリビューターを引き付けることができます。
+
+- **プロジェクトに貢献する**  
+  コミュニティからの貢献を歓迎します！バグの修正、新機能の追加、またはドキュメントの改善など、どんな貢献も貴重です。始めは簡単です。リポジトリをフォークしてプルリクエストを送信するだけです。
+
+- **このプロジェクトを共有する**  
+  UniAPI を友達、同僚、またはソーシャルメディアで共有してください。このプロジェクトを知っている人が多いほど良いです！
+
+- **フィードバックを提供する**  
+  あなたのフィードバックは私たちにとって重要です。提案、アイデア、または問題が発生した場合は、遠慮せずに [GitHub](https://github.com/NGLSG/UniAPI/issues) で issue を開いてください。
+
+皆様のサポートをありがとうございます！皆様と一緒に UniAPI をさらに向上させましょう！
+
+---
+
+---
 
 <a id="license"></a>
 
 ## 📜 ライセンス
 
 MIT - 商用および個人利用は無料です。詳細は [LICENSE](LICENSE) をご確認ください。
+
+---

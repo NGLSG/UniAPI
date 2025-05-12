@@ -14,40 +14,6 @@
 
 ---
 
-## Star History
-
-<a href="https://www.star-history.com/#NGLSG/UniAPI&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date" />
- </picture>
-</a>
-
-<a id="how-to-support-this-project"></a>
-
-## 🌟 如何支持本项目
-
-我们致力于持续改进 UniAPI 并添加新功能。您的支持对我们项目的持续发展至关重要。以下是您可以帮助的方式：
-
-- **给我们点个星**  
-  如果您觉得 UniAPI 有用，请在 [GitHub](https://github.com/NGLSG/UniAPI) 上给我们点个星。这能帮助我们获得更多关注并吸引更多贡献者。
-
-- **参与项目贡献**  
-  我们欢迎来自社区的贡献！无论是修复漏洞、添加新功能还是改进文档，每一份贡献都弥足珍贵。开始贡献很简单，只需要 fork 仓库并提交一个
-  pull request 即可。
-
-- **分享本项目**  
-  把 UniAPI 分享给您的朋友、同事，或者在社交媒体上宣传。知道这个项目的人越多越好！
-
-- **提供反馈**  
-  您的反馈对我们很重要。如果您有任何建议、想法，或者遇到任何问题，请随时在 [GitHub](https://github.com/NGLSG/UniAPI/issues)
-  上提交 issue。
-
-感谢您的支持！让我们携手让 UniAPI 更上一层楼！
-
----
-
 ## 📋 目录
 
 - [语言选择](#language-selection)
@@ -285,8 +251,44 @@ UniAPI 使用基于规则的配置来适配不同的 API 接口。以下是配�
 
 ---
 
+## Star History
+
+<a href="https://www.star-history.com/#NGLSG/UniAPI&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=NGLSG/UniAPI&type=Date" />
+ </picture>
+</a>
+
+<a id="how-to-support-this-project"></a>
+
+## 🌟 如何支持本项目
+
+我们致力于持续改进 UniAPI 并添加新功能。您的支持对我们项目的持续发展至关重要。以下是您可以帮助的方式：
+
+- **给我们点个星**  
+  如果您觉得 UniAPI 有用，请在 [GitHub](https://github.com/NGLSG/UniAPI) 上给我们点个星。这能帮助我们获得更多关注并吸引更多贡献者。
+
+- **参与项目贡献**  
+  我们欢迎来自社区的贡献！无论是修复漏洞、添加新功能还是改进文档，每一份贡献都弥足珍贵。开始贡献很简单，只需要 fork 仓库并提交一个
+  pull request 即可。
+
+- **分享本项目**  
+  把 UniAPI 分享给您的朋友、同事，或者在社交媒体上宣传。知道这个项目的人越多越好！
+
+- **提供反馈**  
+  您的反馈对我们很重要。如果您有任何建议、想法，或者遇到任何问题，请随时在 [GitHub](https://github.com/NGLSG/UniAPI/issues)
+  上提交 issue。
+
+感谢您的支持！让我们携手让 UniAPI 更上一层楼！
+
+---
+
 <a id="license"></a>
 
 ## 📜 许可协议
 
 MIT - 免费用于商业和个人用途。详见 [LICENSE](LICENSE) 文件。
+
+---
